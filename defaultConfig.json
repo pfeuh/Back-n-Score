@@ -1,0 +1,8 @@
+{
+  "DATABASE": "/mnt/Data1/Documents/backNScoreData/database",
+  "INDEX_FILE": "index_partitions.json",
+  "INST_FILE": "instruments.json",
+  "SUBS_FILE": "substitutions.json",
+  "PORT": 8000,
+  "SERVER_NAME": "backnscore"
+}

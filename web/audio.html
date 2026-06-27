@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Back'n Track - Réglages Audio</title>
+    <!-- On réutilise ton fichier CSS existant -->
+    <link rel="stylesheet" href="pupitre.css">
+    <style>
+        /* Ajustements spécifiques pour le formulaire de réglages */
+        .settings-form {
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .setting-group {
+            background-color: #2c3e50;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #444;
+        }
+
+        .setting-label {
+            display: block;
+            font-size: 18px;
+            color: #f1c40f; /* Couleur jaune breadcrumb pour les titres */
+            margin-bottom: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .setting-description {
+            font-size: 14px;
+            color: #ccc;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+
+        /* Input numérique adapté au style */
+        .input-number {
+            height: 50px;
+            background-color: #34495e;
+            color: white;
+            border: 1px solid #555;
+            border-radius: 6px;
+            font-size: 18px;
+            padding: 0 15px;
+            width: 80px;
+            text-align: center;
+        }
+
+        .flex-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .btn-save {
+            display: block;
+            width: 100%;
+            margin-top: 30px;
+            background-color: #1abc9c;
+            border: none;
+            padding: 20px;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Bandeau de menu réutilisé -->
+    <div id="menu-bar">
+        <div class="menu-left">
+            <div class="btn-cancel" onclick="history.back()">✕</div>
+            <span class="breadcrumb-item">BACK'N TRACK</span>
+            <span class="breadcrumb-item current"> > RÉGLAGES AUDIO</span>
+        </div>
+        <div class="menu-right">
+            <!-- Espace vide ou bouton aide -->
+        </div>
+    </div>
+
+    <!-- Contenu défilant -->
+    <div id="content">
+        <form class="settings-form" action="/update-settings" method="POST">
+            
+            <!-- Section 1 : Démarrage Auto -->
+            <div class="setting-group">
+                <div class="flex-row">
+                    <div>
+                        <label class="setting-label">Démarrage Automatique</label>
+                        <div class="setting-description">Lancer la lecture dès qu'un morceau change.</div>
+                    </div>
+                    <label class="solo-label">
+                        <input type="checkbox" name="auto_start" checked>
+                        <span></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Section 2 : Délais -->
+            <div class="setting-group">
+                <div class="flex-row">
+                    <label class="setting-label">Délai avant lecture (sec)</label>
+                    <input type="number" name="start_delay" class="input-number" value="5" min="0">
+                </div>
+            </div>
+
+            <!-- Section 3 : Type de MP3 -->
+            <div class="setting-group">
+                <label class="setting-label">Type de MP3 préféré</label>
+                <div class="setting-description">Le player demandera ce flux au serveur en priorité.</div>
+                <select name="mp3_type" class="custom-select" style="max-width: 100%; width: 100%;">
+                    <option value="backtrack">Backtrack (Instrumental)</option>
+                    <option value="demo">Demo (Complet)</option>
+                    <option value="melody">Melody (Guide)</option>
+                </select>
+            </div>
+
+            <!-- Section 4 : Navigation (Rewind / FF) -->
+            <div class="setting-group">
+                <div class="flex-row" style="margin-bottom: 10px;">
+                    <label class="setting-label">Saut arrière (Rewind)</label>
+                    <div style="color: white;"><input type="number" name="rewind_sec" class="input-number" value="10"> sec</div>
+                </div>
+                <div class="flex-row">
+                    <label class="setting-label">Saut avant (Fast Forward)</label>
+                    <div style="color: white;"><input type="number" name="ff_sec" class="input-number" value="10"> sec</div>
+                </div>
+            </div>
+
+            <button type="submit" class="menu-btn btn-save">ENREGISTRER LES RÉGLAGES</button>
+        </form>
+    </div>
+
+</body>
+</html>

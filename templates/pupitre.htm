@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head><title>Page de l'Instrument</title></head>
+<body>
+    <h1>Partition / Instructions</h1>
+    <div id="affichage" style="font-size: 2em; color: blue;">Chargement...</div>
+
+    <!-- FIX MINIMUM : Socket.IO v4 compatible serveur -->
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+    <script>
+        var socket = io(window.location.origin);
+
+        socket.on('connect', function() {
+            console.log("connecté");
+        });
+
+        socket.on('diffusion', function(data) {
+            console.log("reçu :", data);
+            document.getElementById('affichage').innerText = data.texte;
+        });
+    </script>
+</body>
+</html>

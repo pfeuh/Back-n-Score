@@ -1,0 +1,1750 @@
+[
+    {
+        "title": "A swinging safari",
+        "location": "bands/joyeuxVignerons/aSwingingSafari"
+    },
+    {
+        "title": "Austin's theme (Soul bossa nova)",
+        "location": "bands/joyeuxVignerons/austinSThemeSoulBossaNova"
+    },
+    {
+        "title": "Barg un Thal singa fer Dich",
+        "location": "bands/joyeuxVignerons/bargUnThalSingaFerDich"
+    },
+    {
+        "title": "Bodensee Polka",
+        "location": "bands/joyeuxVignerons/bodenseePolka"
+    },
+    {
+        "title": "Böhmischer Traum",
+        "location": "bands/joyeuxVignerons/bohmischerTraum"
+    },
+    {
+        "title": "D_àlde Kàtzeroller",
+        "location": "bands/joyeuxVignerons/dAldeKatzeroller"
+    },
+    {
+        "title": "Das Sternchen",
+        "location": "bands/joyeuxVignerons/dasSternchen"
+    },
+    {
+        "title": "Daumen Hoch",
+        "location": "bands/joyeuxVignerons/daumenHoch"
+    },
+    {
+        "title": "Du, nur du",
+        "location": "bands/joyeuxVignerons/duNurDu"
+    },
+    {
+        "title": "Fegerländer Musikant",
+        "location": "bands/joyeuxVignerons/fegerlanderMusikant"
+    },
+    {
+        "title": "Fliege mit mir in die Heimat",
+        "location": "bands/joyeuxVignerons/fliegeMitMirInDieHeimat"
+    },
+    {
+        "title": "Gonna fly now",
+        "location": "bands/joyeuxVignerons/gonnaFlyNow"
+    },
+    {
+        "title": "Grandfather’s Clock",
+        "location": "bands/joyeuxVignerons/grandfatherSClock"
+    },
+    {
+        "title": "Immer wieder Blasmusik",
+        "location": "bands/joyeuxVignerons/immerWiederBlasmusik"
+    },
+    {
+        "title": "Klarifari",
+        "location": "bands/joyeuxVignerons/klarifari"
+    },
+    {
+        "title": "La fourragère des sapeurs pompiers",
+        "location": "bands/joyeuxVignerons/laFourragereDesSapeursPompiers"
+    },
+    {
+        "title": "Mein Mädchen",
+        "location": "bands/joyeuxVignerons/meinMadchen"
+    },
+    {
+        "title": "Musik ist Trumpf",
+        "location": "bands/joyeuxVignerons/musikIstTrumpf"
+    },
+    {
+        "title": "Pirates of the caribbean medley",
+        "location": "bands/joyeuxVignerons/piratesOfTheCaribbeanMedley"
+    },
+    {
+        "title": "Polka mit Herz",
+        "location": "bands/joyeuxVignerons/polkaMitHerz"
+    },
+    {
+        "title": "Rauschende Birken",
+        "location": "bands/joyeuxVignerons/rauschendeBirken"
+    },
+    {
+        "title": "Schwarzwaldmusikanten (Elsassmusikante)",
+        "location": "bands/joyeuxVignerons/schwarzwaldmusikanten"
+    },
+    {
+        "title": "Sudböhmische Polka",
+        "location": "bands/joyeuxVignerons/sudbohmischePolka"
+    },
+    {
+        "title": "Swinging Offenbach",
+        "location": "bands/joyeuxVignerons/swingingOffenbach"
+    },
+    {
+        "title": "Teplickà",
+        "location": "bands/joyeuxVignerons/teplickaPolka"
+    },
+    {
+        "title": "The mask of Zorro",
+        "location": "bands/joyeuxVignerons/theMaskOfZorro"
+    },
+    {
+        "title": "Valse de la Laube",
+        "location": "bands/joyeuxVignerons/valseDeLaLaube"
+    },
+    {
+        "title": "Viva",
+        "location": "bands/joyeuxVignerons/viva"
+    },
+    {
+        "title": "Weinkeller Polka",
+        "location": "bands/joyeuxVignerons/weinkellerPolka"
+    },
+    {
+        "title": "Wir Musikanten",
+        "location": "bands/joyeuxVignerons/wirMusikanten"
+    },
+    {
+        "title": "All inclusive",
+        "location": "bands/pierreFaller/allInclusive"
+    },
+    {
+        "title": "Anglaise (l')",
+        "location": "bands/pierreFaller/anglaiseL"
+    },
+    {
+        "title": "Août à Strasbourg",
+        "location": "bands/pierreFaller/aoutAStrasbourg"
+    },
+    {
+        "title": "Ballade sur une clave africaine",
+        "location": "bands/pierreFaller/balladeSurUneClaveAfricaine"
+    },
+    {
+        "title": "Ballotage 2022",
+        "location": "bands/pierreFaller/ballotage2022"
+    },
+    {
+        "title": "Blues de blanc",
+        "location": "bands/pierreFaller/bluesDeBlanc"
+    },
+    {
+        "title": "Blues for Domi",
+        "location": "bands/pierreFaller/bluesForDomi"
+    },
+    {
+        "title": "Bulletin météo",
+        "location": "bands/pierreFaller/bulletinMeteo"
+    },
+    {
+        "title": "Cafette en SOLm",
+        "location": "bands/pierreFaller/cafetteEnSolm"
+    },
+    {
+        "title": "Camel",
+        "location": "bands/pierreFaller/camel"
+    },
+    {
+        "title": "Captain Kuku",
+        "location": "bands/pierreFaller/captainKuku"
+    },
+    {
+        "title": "Carbone 14",
+        "location": "bands/pierreFaller/carbone14"
+    },
+    {
+        "title": "Chanson pour Marie",
+        "location": "bands/pierreFaller/chansonPourMarie"
+    },
+    {
+        "title": "Chant des cigales (le)",
+        "location": "bands/pierreFaller/chantDesCigalesLe"
+    },
+    {
+        "title": "Chinoiserie brésilienne",
+        "location": "bands/pierreFaller/chinoiserieBresilienne"
+    },
+    {
+        "title": "Chose de minuit (La)",
+        "location": "bands/pierreFaller/choseDeMinuitLa"
+    },
+    {
+        "title": "Coolissimo",
+        "location": "bands/pierreFaller/coolissimo"
+    },
+    {
+        "title": "Cristal valley",
+        "location": "bands/pierreFaller/cristalValley"
+    },
+    {
+        "title": "Croche manquante (la)",
+        "location": "bands/pierreFaller/crocheManquanteLa"
+    },
+    {
+        "title": "Cuite mondaine",
+        "location": "bands/pierreFaller/cuiteMondaine"
+    },
+    {
+        "title": "Deadly trap",
+        "location": "bands/pierreFaller/deadlyTrap"
+    },
+    {
+        "title": "El sexto cubano",
+        "location": "bands/pierreFaller/elSextoCubano"
+    },
+    {
+        "title": "Em Pfeuh sini Samba",
+        "location": "bands/pierreFaller/emPfeuhSiniSamba"
+    },
+    {
+        "title": "Escale à Monaco",
+        "location": "bands/pierreFaller/escaleAMonaco"
+    },
+    {
+        "title": "Et Nino rota",
+        "location": "bands/pierreFaller/etNinoRota"
+    },
+    {
+        "title": "Flammekuche",
+        "location": "bands/pierreFaller/flammekuche"
+    },
+    {
+        "title": "Fuguette (la)",
+        "location": "bands/pierreFaller/fuguetteLa"
+    },
+    {
+        "title": "Fun Dingo",
+        "location": "bands/pierreFaller/funDingo"
+    },
+    {
+        "title": "H.L.M. d'Alsace",
+        "location": "bands/pierreFaller/hlmDAlsace"
+    },
+    {
+        "title": "Illkirch plage",
+        "location": "bands/pierreFaller/illkirchPlage"
+    },
+    {
+        "title": "Labyrinthe",
+        "location": "bands/pierreFaller/labyrinthe"
+    },
+    {
+        "title": "Mimi la Toulonnaise",
+        "location": "bands/pierreFaller/mimiLaToulonnaise"
+    },
+    {
+        "title": "Pfugue (la)",
+        "location": "bands/pierreFaller/pfugueLa"
+    },
+    {
+        "title": "Préchauffage",
+        "location": "bands/pierreFaller/prechauffage"
+    },
+    {
+        "title": "Rosie la rate",
+        "location": "bands/pierreFaller/rosieLaRate"
+    },
+    {
+        "title": "Sauce Guaguanco",
+        "location": "bands/pierreFaller/sauceGuaguanco"
+    },
+    {
+        "title": "Secret mission",
+        "location": "bands/pierreFaller/secretMission"
+    },
+    {
+        "title": "Slow d'été",
+        "location": "bands/pierreFaller/slowDEte"
+    },
+    {
+        "title": "Sélestat plage",
+        "location": "bands/pierreFaller/selestatPlage"
+    },
+    {
+        "title": "Tango pour Laurent",
+        "location": "bands/pierreFaller/tangoPourLaurent"
+    },
+    {
+        "title": "Tango pour Manu",
+        "location": "bands/pierreFaller/tangoPourManu"
+    },
+    {
+        "title": "The lazy one",
+        "location": "bands/pierreFaller/theLazyOne"
+    },
+    {
+        "title": "Un truc cool",
+        "location": "bands/pierreFaller/unTrucCool"
+    },
+    {
+        "title": "à la Bireli",
+        "location": "bands/pierreFaller/aLaBireli"
+    },
+    {
+        "title": "40ème de Mozart",
+        "location": "styles/classic/40emeDeMozart"
+    },
+    {
+        "title": "Adagio d'Albinoni",
+        "location": "styles/classic/adagioDAlbinoni"
+    },
+    {
+        "title": "Air on a G string",
+        "location": "styles/classic/airOnAGString"
+    },
+    {
+        "title": "Avé Maria Bach/Gounot",
+        "location": "styles/classic/aveMariaBachGounot"
+    },
+    {
+        "title": "Avé Maria Schubert",
+        "location": "styles/classic/aveMariaSchubert"
+    },
+    {
+        "title": "Badinerie",
+        "location": "styles/classic/badinerie"
+    },
+    {
+        "title": "Boléro (Ravel)",
+        "location": "styles/classic/boleroRavel"
+    },
+    {
+        "title": "Bourée de Bach",
+        "location": "styles/classic/boureeDeBach"
+    },
+    {
+        "title": "Concerto pour une voix",
+        "location": "styles/classic/concertoPourUneVoix"
+    },
+    {
+        "title": "Duo des fleurs",
+        "location": "styles/classic/duoDesFleurs"
+    },
+    {
+        "title": "Gnossienne Un",
+        "location": "styles/classic/gnossienneUn"
+    },
+    {
+        "title": "Gymnopédie Un",
+        "location": "styles/classic/gymnopedieUn"
+    },
+    {
+        "title": "Marche Turque",
+        "location": "styles/classic/marcheTurque"
+    },
+    {
+        "title": "Menuet en SOL de Bach",
+        "location": "styles/classic/menuetEnSolDeBach"
+    },
+    {
+        "title": "Passacaglia",
+        "location": "styles/classic/passacaglia"
+    },
+    {
+        "title": "Queen of the night aria",
+        "location": "styles/classic/queenOfTheNightAria"
+    },
+    {
+        "title": "The Swan",
+        "location": "styles/classic/theSwan"
+    },
+    {
+        "title": "Tous en piste",
+        "location": "styles/concours/tousEnPiste"
+    },
+    {
+        "title": "12th street Rag",
+        "location": "styles/jazz/12thStreetRag"
+    },
+    {
+        "title": "A foggy day",
+        "location": "styles/jazz/aFoggyDay"
+    },
+    {
+        "title": "A night in Tunisia",
+        "location": "styles/jazz/aNightInTunisia"
+    },
+    {
+        "title": "After you've gone",
+        "location": "styles/jazz/afterYouVeGone"
+    },
+    {
+        "title": "Afternoon in Paris",
+        "location": "styles/jazz/afternoonInParis"
+    },
+    {
+        "title": "Ain't misbehavin'",
+        "location": "styles/jazz/ainTMisbehavin"
+    },
+    {
+        "title": "Ain't she sweet?",
+        "location": "styles/jazz/ainTSheSweet"
+    },
+    {
+        "title": "All my tomorrows",
+        "location": "styles/jazz/allMyTomorrows"
+    },
+    {
+        "title": "All of me",
+        "location": "styles/jazz/allOfMe"
+    },
+    {
+        "title": "All the things you are",
+        "location": "styles/jazz/allTheThingsYouAre"
+    },
+    {
+        "title": "American patrol",
+        "location": "styles/jazz/americanPatrol"
+    },
+    {
+        "title": "Anthropology",
+        "location": "styles/jazz/anthropology"
+    },
+    {
+        "title": "April in Paris",
+        "location": "styles/jazz/aprilInParis"
+    },
+    {
+        "title": "Armstrong",
+        "location": "styles/jazz/armstrong"
+    },
+    {
+        "title": "Autumn leaves",
+        "location": "styles/jazz/autumnLeaves"
+    },
+    {
+        "title": "Bag's groove",
+        "location": "styles/jazz/bagSGroove"
+    },
+    {
+        "title": "Basin street blues",
+        "location": "styles/jazz/basinStreetBlues"
+    },
+    {
+        "title": "Beautiful love",
+        "location": "styles/jazz/beautifulLove"
+    },
+    {
+        "title": "Begin the beguine",
+        "location": "styles/jazz/beginTheBeguine"
+    },
+    {
+        "title": "Bernie's tune",
+        "location": "styles/jazz/bernieSTune"
+    },
+    {
+        "title": "Birdland",
+        "location": "styles/jazz/birdland"
+    },
+    {
+        "title": "Birk's works",
+        "location": "styles/jazz/birkSWorks"
+    },
+    {
+        "title": "Blue monk",
+        "location": "styles/jazz/blueMonk"
+    },
+    {
+        "title": "Blue moon",
+        "location": "styles/jazz/blueMoon"
+    },
+    {
+        "title": "Blue skies",
+        "location": "styles/jazz/blueSkies"
+    },
+    {
+        "title": "Body and soul",
+        "location": "styles/jazz/bodyAndSoul"
+    },
+    {
+        "title": "Breezin'",
+        "location": "styles/jazz/breezin"
+    },
+    {
+        "title": "Broadway Blues",
+        "location": "styles/jazz/broadwayBlues"
+    },
+    {
+        "title": "Bye Bye Blues",
+        "location": "styles/jazz/byeByeBlues"
+    },
+    {
+        "title": "Bye bye blackbird",
+        "location": "styles/jazz/byeByeBlackbird"
+    },
+    {
+        "title": "C jam blues",
+        "location": "styles/jazz/cJamBlues"
+    },
+    {
+        "title": "C'est magnifique",
+        "location": "styles/jazz/cEstMagnifique"
+    },
+    {
+        "title": "C'est si bon",
+        "location": "styles/jazz/cEstSiBon"
+    },
+    {
+        "title": "Can't buy me love",
+        "location": "styles/jazz/canTBuyMeLove"
+    },
+    {
+        "title": "Cantina band",
+        "location": "styles/jazz/cantinaBand"
+    },
+    {
+        "title": "Capitaine Flam",
+        "location": "styles/jazz/capitaineFlam"
+    },
+    {
+        "title": "Caravan",
+        "location": "styles/jazz/caravan"
+    },
+    {
+        "title": "Careless love",
+        "location": "styles/jazz/carelessLove"
+    },
+    {
+        "title": "Chameleon",
+        "location": "styles/jazz/chameleon"
+    },
+    {
+        "title": "Charleston",
+        "location": "styles/jazz/charleston"
+    },
+    {
+        "title": "Cheek to cheek",
+        "location": "styles/jazz/cheekToCheek"
+    },
+    {
+        "title": "Cherokee",
+        "location": "styles/jazz/cherokee"
+    },
+    {
+        "title": "Chitlins con carne",
+        "location": "styles/jazz/chitlinsConCarne"
+    },
+    {
+        "title": "Cold duck time",
+        "location": "styles/jazz/coldDuckTime"
+    },
+    {
+        "title": "Comin' home baby",
+        "location": "styles/jazz/cominHomeBaby"
+    },
+    {
+        "title": "Cotton tail",
+        "location": "styles/jazz/cottonTail"
+    },
+    {
+        "title": "Could it be you",
+        "location": "styles/jazz/couldItBeYou"
+    },
+    {
+        "title": "Cruella De Vil",
+        "location": "styles/jazz/cruellaDeVil"
+    },
+    {
+        "title": "Cry me a river",
+        "location": "styles/jazz/cryMeARiver"
+    },
+    {
+        "title": "Crystal silence",
+        "location": "styles/jazz/crystalSilence"
+    },
+    {
+        "title": "Dancing on the ceiling",
+        "location": "styles/jazz/dancingOnTheCeiling"
+    },
+    {
+        "title": "Days of wine and roses",
+        "location": "styles/jazz/daysOfWineAndRoses"
+    },
+    {
+        "title": "Djangology",
+        "location": "styles/jazz/djangology"
+    },
+    {
+        "title": "Do nothin' till you hear from me",
+        "location": "styles/jazz/doNothinTillYouHearFromMe"
+    },
+    {
+        "title": "Doctor Jazz",
+        "location": "styles/jazz/doctorJazz"
+    },
+    {
+        "title": "Don't blame me",
+        "location": "styles/jazz/donTBlameMe"
+    },
+    {
+        "title": "Don't get around much anymore",
+        "location": "styles/jazz/donTGetAroundMuchAnymore"
+    },
+    {
+        "title": "Donna Lee",
+        "location": "styles/jazz/donnaLee"
+    },
+    {
+        "title": "Doodlin'",
+        "location": "styles/jazz/doodlin"
+    },
+    {
+        "title": "Douce ambiance",
+        "location": "styles/jazz/douceAmbiance"
+    },
+    {
+        "title": "Down by the riverside",
+        "location": "styles/jazz/downByTheRiverside"
+    },
+    {
+        "title": "Doxy",
+        "location": "styles/jazz/doxy"
+    },
+    {
+        "title": "Dream a little dream of me",
+        "location": "styles/jazz/dreamALittleDreamOfMe"
+    },
+    {
+        "title": "Five spot after dark in Dm",
+        "location": "styles/jazz/fiveSpotAfterDarkInDm"
+    },
+    {
+        "title": "Flamingo",
+        "location": "styles/jazz/flamingo"
+    },
+    {
+        "title": "Float me down the river",
+        "location": "styles/jazz/floatMeDownTheRiver"
+    },
+    {
+        "title": "Fly me to the moon",
+        "location": "styles/jazz/flyMeToTheMoon"
+    },
+    {
+        "title": "For the love of God",
+        "location": "styles/jazz/forTheLoveOfGod"
+    },
+    {
+        "title": "Four",
+        "location": "styles/jazz/four"
+    },
+    {
+        "title": "Frankenstein",
+        "location": "styles/jazz/frankenstein"
+    },
+    {
+        "title": "Freddy the freeloader",
+        "location": "styles/jazz/freddyTheFreeloader"
+    },
+    {
+        "title": "Frim fram sauce",
+        "location": "styles/jazz/frimFramSauce"
+    },
+    {
+        "title": "Funk dumplin'",
+        "location": "styles/jazz/funkDumplin"
+    },
+    {
+        "title": "Gee Baby",
+        "location": "styles/jazz/geeBaby"
+    },
+    {
+        "title": "Georgia on my mind",
+        "location": "styles/jazz/georgiaOnMyMind"
+    },
+    {
+        "title": "Girl talk",
+        "location": "styles/jazz/girlTalk"
+    },
+    {
+        "title": "Green onions",
+        "location": "styles/jazz/greenOnions"
+    },
+    {
+        "title": "Groovin' high",
+        "location": "styles/jazz/groovinHigh"
+    },
+    {
+        "title": "Harlem nocturne",
+        "location": "styles/jazz/harlemNocturne"
+    },
+    {
+        "title": "Have you met miss Jones",
+        "location": "styles/jazz/haveYouMetMissJones"
+    },
+    {
+        "title": "Hawaïi Five O theme",
+        "location": "styles/jazz/hawaiiFiveOTheme"
+    },
+    {
+        "title": "He's a pirate",
+        "location": "styles/jazz/heSAPirate"
+    },
+    {
+        "title": "Hello Dolly",
+        "location": "styles/jazz/helloDolly"
+    },
+    {
+        "title": "Hey, good lookin'",
+        "location": "styles/jazz/heyGoodLookin"
+    },
+    {
+        "title": "Honeysuckle Rose",
+        "location": "styles/jazz/honeysuckleRose"
+    },
+    {
+        "title": "How high the moon",
+        "location": "styles/jazz/howHighTheMoon"
+    },
+    {
+        "title": "How insensitive",
+        "location": "styles/jazz/howInsensitive"
+    },
+    {
+        "title": "I can't give you anything but love",
+        "location": "styles/jazz/iCanTGiveYouAnythingButLove"
+    },
+    {
+        "title": "I got rhythm",
+        "location": "styles/jazz/iGotRhythm"
+    },
+    {
+        "title": "I remember Clifford",
+        "location": "styles/jazz/iRememberClifford"
+    },
+    {
+        "title": "I shot the sheriff",
+        "location": "styles/jazz/iShotTheSheriff"
+    },
+    {
+        "title": "I wanna be like you",
+        "location": "styles/jazz/iWannaBeLikeYou"
+    },
+    {
+        "title": "I'll remember April",
+        "location": "styles/jazz/iLlRememberApril"
+    },
+    {
+        "title": "I'll see you in my dreams",
+        "location": "styles/jazz/iLlSeeYouInMyDreams"
+    },
+    {
+        "title": "I'm beginning to see the light",
+        "location": "styles/jazz/iMBeginningToSeeTheLight"
+    },
+    {
+        "title": "I've found a new baby",
+        "location": "styles/jazz/iVeFoundANewBaby"
+    },
+    {
+        "title": "In a mellow tone",
+        "location": "styles/jazz/inAMellowTone"
+    },
+    {
+        "title": "In a sentimental mood",
+        "location": "styles/jazz/inASentimentalMood"
+    },
+    {
+        "title": "In the jailhouse now",
+        "location": "styles/jazz/inTheJailhouseNow"
+    },
+    {
+        "title": "Is you is or is you ain't my baby",
+        "location": "styles/jazz/isYouIsOrIsYouAinTMyBaby"
+    },
+    {
+        "title": "Isn't she lovely",
+        "location": "styles/jazz/isnTSheLovely"
+    },
+    {
+        "title": "Isn't she lovely en REm",
+        "location": "styles/jazz/isnTSheLovelyEnRem"
+    },
+    {
+        "title": "It ain't necessarily so",
+        "location": "styles/jazz/itAinTNecessarilySo"
+    },
+    {
+        "title": "It could happen to you",
+        "location": "styles/jazz/itCouldHappenToYou"
+    },
+    {
+        "title": "It don't mean a thing",
+        "location": "styles/jazz/itDonTMeanAThing"
+    },
+    {
+        "title": "It had to be you",
+        "location": "styles/jazz/itHadToBeYou"
+    },
+    {
+        "title": "Java",
+        "location": "styles/jazz/java"
+    },
+    {
+        "title": "Jordu",
+        "location": "styles/jazz/jordu"
+    },
+    {
+        "title": "Just a closer walk with Thee",
+        "location": "styles/jazz/justACloserWalkWithThee"
+    },
+    {
+        "title": "Just like that",
+        "location": "styles/jazz/justLikeThat"
+    },
+    {
+        "title": "Just one of those things",
+        "location": "styles/jazz/justOneOfThoseThings"
+    },
+    {
+        "title": "Just squeeze me",
+        "location": "styles/jazz/justSqueezeMe"
+    },
+    {
+        "title": "Killer Joe",
+        "location": "styles/jazz/killerJoe"
+    },
+    {
+        "title": "LOVE",
+        "location": "styles/jazz/love"
+    },
+    {
+        "title": "La mer",
+        "location": "styles/jazz/laMer"
+    },
+    {
+        "title": "La vie en rose",
+        "location": "styles/jazz/laVieEnRose"
+    },
+    {
+        "title": "Lady Bird",
+        "location": "styles/jazz/ladyBird"
+    },
+    {
+        "title": "Lady be good",
+        "location": "styles/jazz/ladyBeGood"
+    },
+    {
+        "title": "Lazybones",
+        "location": "styles/jazz/lazybones"
+    },
+    {
+        "title": "Li'l darling",
+        "location": "styles/jazz/liLDarling"
+    },
+    {
+        "title": "Limbo jazz",
+        "location": "styles/jazz/limboJazz"
+    },
+    {
+        "title": "Limehouse blues en LAb",
+        "location": "styles/jazz/limehouseBluesEnLab"
+    },
+    {
+        "title": "Limehouse blues en SOL",
+        "location": "styles/jazz/limehouseBluesEnSol"
+    },
+    {
+        "title": "Little sunflower",
+        "location": "styles/jazz/littleSunflower"
+    },
+    {
+        "title": "Love for sale",
+        "location": "styles/jazz/loveForSale"
+    },
+    {
+        "title": "Lullaby of Birdland",
+        "location": "styles/jazz/lullabyOfBirdland"
+    },
+    {
+        "title": "Mack the knife",
+        "location": "styles/jazz/mackTheKnife"
+    },
+    {
+        "title": "Mama don't allow",
+        "location": "styles/jazz/mamaDonTAllow"
+    },
+    {
+        "title": "Mercy mercy mercy",
+        "location": "styles/jazz/mercyMercyMercy"
+    },
+    {
+        "title": "Midnight blue",
+        "location": "styles/jazz/midnightBlue"
+    },
+    {
+        "title": "Mission: Impossible",
+        "location": "styles/jazz/missionImpossible"
+    },
+    {
+        "title": "Mister P.C.",
+        "location": "styles/jazz/misterPc"
+    },
+    {
+        "title": "Misty",
+        "location": "styles/jazz/misty"
+    },
+    {
+        "title": "Moanin'",
+        "location": "styles/jazz/moanin"
+    },
+    {
+        "title": "Moondance",
+        "location": "styles/jazz/moondance"
+    },
+    {
+        "title": "Moonglow",
+        "location": "styles/jazz/moonglow"
+    },
+    {
+        "title": "Muskrat Ramble",
+        "location": "styles/jazz/muskratRamble"
+    },
+    {
+        "title": "My funny Valentine",
+        "location": "styles/jazz/myFunnyValentine"
+    },
+    {
+        "title": "Ménilmontant",
+        "location": "styles/jazz/menilmontant"
+    },
+    {
+        "title": "Nature boy",
+        "location": "styles/jazz/natureBoy"
+    },
+    {
+        "title": "Night Birds",
+        "location": "styles/jazz/nightBirds"
+    },
+    {
+        "title": "Night and day",
+        "location": "styles/jazz/nightAndDay"
+    },
+    {
+        "title": "Night train",
+        "location": "styles/jazz/nightTrain"
+    },
+    {
+        "title": "Nostalgia in Time Square",
+        "location": "styles/jazz/nostalgiaInTimeSquare"
+    },
+    {
+        "title": "Nova",
+        "location": "styles/jazz/nova"
+    },
+    {
+        "title": "Nuages",
+        "location": "styles/jazz/nuages"
+    },
+    {
+        "title": "Old devil moon",
+        "location": "styles/jazz/oldDevilMoon"
+    },
+    {
+        "title": "On a slow boat to china",
+        "location": "styles/jazz/onASlowBoatToChina"
+    },
+    {
+        "title": "On green dolphin street",
+        "location": "styles/jazz/onGreenDolphinStreet"
+    },
+    {
+        "title": "On the sunny side of the street",
+        "location": "styles/jazz/onTheSunnySideOfTheStreet"
+    },
+    {
+        "title": "Ornithology",
+        "location": "styles/jazz/ornithology"
+    },
+    {
+        "title": "Out of nowhere",
+        "location": "styles/jazz/outOfNowhere"
+    },
+    {
+        "title": "Out of this world",
+        "location": "styles/jazz/outOfThisWorld"
+    },
+    {
+        "title": "Over the rainbow",
+        "location": "styles/jazz/overTheRainbow"
+    },
+    {
+        "title": "Paquito",
+        "location": "styles/jazz/paquito"
+    },
+    {
+        "title": "Penny Lane",
+        "location": "styles/jazz/pennyLane"
+    },
+    {
+        "title": "Perdido",
+        "location": "styles/jazz/perdido"
+    },
+    {
+        "title": "Peter Gunn's theme",
+        "location": "styles/jazz/peterGunnSTheme"
+    },
+    {
+        "title": "Petite fleur",
+        "location": "styles/jazz/petiteFleur"
+    },
+    {
+        "title": "Pink panther theme",
+        "location": "styles/jazz/pinkPantherTheme"
+    },
+    {
+        "title": "Pistaccio",
+        "location": "styles/jazz/pistaccio"
+    },
+    {
+        "title": "Place du Tertre",
+        "location": "styles/jazz/placeDuTertre"
+    },
+    {
+        "title": "Puttin' on the Ritz",
+        "location": "styles/jazz/puttinOnTheRitz"
+    },
+    {
+        "title": "Quizaz",
+        "location": "styles/jazz/quizaz"
+    },
+    {
+        "title": "Red's Riff",
+        "location": "styles/jazz/redSRiff"
+    },
+    {
+        "title": "Road song",
+        "location": "styles/jazz/roadSong"
+    },
+    {
+        "title": "Roses de Picardie",
+        "location": "styles/jazz/rosesDePicardie"
+    },
+    {
+        "title": "Saint James infirmary",
+        "location": "styles/jazz/saintJamesInfirmary"
+    },
+    {
+        "title": "Saint Louis blues",
+        "location": "styles/jazz/saintLouisBlues"
+    },
+    {
+        "title": "Satin doll",
+        "location": "styles/jazz/satinDoll"
+    },
+    {
+        "title": "Scrapple from the apple",
+        "location": "styles/jazz/scrappleFromTheApple"
+    },
+    {
+        "title": "Sentimental journey",
+        "location": "styles/jazz/sentimentalJourney"
+    },
+    {
+        "title": "September song",
+        "location": "styles/jazz/septemberSong"
+    },
+    {
+        "title": "Sheik of Araby",
+        "location": "styles/jazz/sheikOfAraby"
+    },
+    {
+        "title": "Smile",
+        "location": "styles/jazz/smile"
+    },
+    {
+        "title": "So what",
+        "location": "styles/jazz/soWhat"
+    },
+    {
+        "title": "Softly as in a morning sunrise",
+        "location": "styles/jazz/softlyAsInAMorningSunrise"
+    },
+    {
+        "title": "Solitude",
+        "location": "styles/jazz/solitude"
+    },
+    {
+        "title": "Sonnymoon for two",
+        "location": "styles/jazz/sonnymoonForTwo"
+    },
+    {
+        "title": "Sophisticated lady",
+        "location": "styles/jazz/sophisticatedLady"
+    },
+    {
+        "title": "Spain",
+        "location": "styles/jazz/spain"
+    },
+    {
+        "title": "Spain (en Sib)",
+        "location": "styles/jazz/spainEnSib"
+    },
+    {
+        "title": "Speak no evil",
+        "location": "styles/jazz/speakNoEvil"
+    },
+    {
+        "title": "Star Trek",
+        "location": "styles/jazz/starTrek"
+    },
+    {
+        "title": "Star War (main theme)",
+        "location": "styles/jazz/starWarMainTheme"
+    },
+    {
+        "title": "Stella by star light",
+        "location": "styles/jazz/stellaByStarLight"
+    },
+    {
+        "title": "Step lightly",
+        "location": "styles/jazz/stepLightly"
+    },
+    {
+        "title": "Stolen moments",
+        "location": "styles/jazz/stolenMoments"
+    },
+    {
+        "title": "Stompin' at the Savoy",
+        "location": "styles/jazz/stompinAtTheSavoy"
+    },
+    {
+        "title": "Stormy",
+        "location": "styles/jazz/stormy"
+    },
+    {
+        "title": "Stormy weather",
+        "location": "styles/jazz/stormyWeather"
+    },
+    {
+        "title": "Sugar",
+        "location": "styles/jazz/sugar"
+    },
+    {
+        "title": "Summer Breeze",
+        "location": "styles/jazz/summerBreeze"
+    },
+    {
+        "title": "Summertime",
+        "location": "styles/jazz/summertime"
+    },
+    {
+        "title": "Summertime (en Cm6)",
+        "location": "styles/jazz/summertimeEnCm6"
+    },
+    {
+        "title": "Sunny",
+        "location": "styles/jazz/sunny"
+    },
+    {
+        "title": "Sweet Georgia Brown FA",
+        "location": "styles/jazz/sweetGeorgiaBrownFa"
+    },
+    {
+        "title": "Sweet Georgia Brown SOL",
+        "location": "styles/jazz/sweetGeorgiaBrownSol"
+    },
+    {
+        "title": "Sweet Sue",
+        "location": "styles/jazz/sweetSue"
+    },
+    {
+        "title": "Swing 42",
+        "location": "styles/jazz/swing42"
+    },
+    {
+        "title": "Swingin' shepherd blues",
+        "location": "styles/jazz/swinginShepherdBlues"
+    },
+    {
+        "title": "Syracuse",
+        "location": "styles/jazz/syracuse"
+    },
+    {
+        "title": "Take Five",
+        "location": "styles/jazz/takeFive"
+    },
+    {
+        "title": "Take Five en Cm",
+        "location": "styles/jazz/takeFiveEnCm"
+    },
+    {
+        "title": "Take the A train",
+        "location": "styles/jazz/takeTheATrain"
+    },
+    {
+        "title": "Take the A train en LAb",
+        "location": "styles/jazz/takeTheATrainEnLab"
+    },
+    {
+        "title": "Take the Coltrane",
+        "location": "styles/jazz/takeTheColtrane"
+    },
+    {
+        "title": "Tangerine",
+        "location": "styles/jazz/tangerine"
+    },
+    {
+        "title": "Tea for two",
+        "location": "styles/jazz/teaForTwo"
+    },
+    {
+        "title": "Tears",
+        "location": "styles/jazz/tears"
+    },
+    {
+        "title": "Tenor madness",
+        "location": "styles/jazz/tenorMadness"
+    },
+    {
+        "title": "The Simpson's",
+        "location": "styles/jazz/theSimpsonS"
+    },
+    {
+        "title": "The ballad of Bonnie and Clyde",
+        "location": "styles/jazz/theBalladOfBonnieAndClyde"
+    },
+    {
+        "title": "The bare necessities",
+        "location": "styles/jazz/theBareNecessities"
+    },
+    {
+        "title": "The cat",
+        "location": "styles/jazz/theCat"
+    },
+    {
+        "title": "The chicken",
+        "location": "styles/jazz/theChicken"
+    },
+    {
+        "title": "The creole love call",
+        "location": "styles/jazz/theCreoleLoveCall"
+    },
+    {
+        "title": "The drive",
+        "location": "styles/jazz/theDrive"
+    },
+    {
+        "title": "The fool on the hill",
+        "location": "styles/jazz/theFoolOnTheHill"
+    },
+    {
+        "title": "The good life",
+        "location": "styles/jazz/theGoodLife"
+    },
+    {
+        "title": "The in Crowd",
+        "location": "styles/jazz/theInCrowd"
+    },
+    {
+        "title": "The nearness of you",
+        "location": "styles/jazz/theNearnessOfYou"
+    },
+    {
+        "title": "The night has a thousand eyes",
+        "location": "styles/jazz/theNightHasAThousandEyes"
+    },
+    {
+        "title": "The preacher",
+        "location": "styles/jazz/thePreacher"
+    },
+    {
+        "title": "The shadow of your smile",
+        "location": "styles/jazz/theShadowOfYourSmile"
+    },
+    {
+        "title": "Them there eyes",
+        "location": "styles/jazz/themThereEyes"
+    },
+    {
+        "title": "There will never be another you",
+        "location": "styles/jazz/thereWillNeverBeAnotherYou"
+    },
+    {
+        "title": "This masquerade",
+        "location": "styles/jazz/thisMasquerade"
+    },
+    {
+        "title": "Ticket to ride",
+        "location": "styles/jazz/ticketToRide"
+    },
+    {
+        "title": "Topsy",
+        "location": "styles/jazz/topsy"
+    },
+    {
+        "title": "Tune-up",
+        "location": "styles/jazz/tuneUp"
+    },
+    {
+        "title": "Undecided",
+        "location": "styles/jazz/undecided"
+    },
+    {
+        "title": "Wayfaring stranger",
+        "location": "styles/jazz/wayfaringStranger"
+    },
+    {
+        "title": "Well you needn't",
+        "location": "styles/jazz/wellYouNeednT"
+    },
+    {
+        "title": "What a wonderful world",
+        "location": "styles/jazz/whatAWonderfulWorld"
+    },
+    {
+        "title": "What is this thing called Love",
+        "location": "styles/jazz/whatIsThisThingCalledLove"
+    },
+    {
+        "title": "What's up with this",
+        "location": "styles/jazz/whatSUpWithThis"
+    },
+    {
+        "title": "When I grow too old to dream",
+        "location": "styles/jazz/whenIGrowTooOldToDream"
+    },
+    {
+        "title": "When the Saints go marching in",
+        "location": "styles/jazz/whenTheSaintsGoMarchingIn"
+    },
+    {
+        "title": "Whispering",
+        "location": "styles/jazz/whispering"
+    },
+    {
+        "title": "Wonderwall",
+        "location": "styles/jazz/wonderwall"
+    },
+    {
+        "title": "Work song",
+        "location": "styles/jazz/workSong"
+    },
+    {
+        "title": "Yardbird Suite",
+        "location": "styles/jazz/yardbirdSuite"
+    },
+    {
+        "title": "Yes, Sir",
+        "location": "styles/jazz/yesSir"
+    },
+    {
+        "title": "You never can tell",
+        "location": "styles/jazz/youNeverCanTell"
+    },
+    {
+        "title": "Afro blue",
+        "location": "styles/latin/afroBlue"
+    },
+    {
+        "title": "Agua de beber",
+        "location": "styles/latin/aguaDeBeber"
+    },
+    {
+        "title": "Also sprach Zarathustra",
+        "location": "styles/latin/alsoSprachZarathustra"
+    },
+    {
+        "title": "Armando's rumba",
+        "location": "styles/latin/armandoSRumba"
+    },
+    {
+        "title": "Baby elephant walk",
+        "location": "styles/latin/babyElephantWalk"
+    },
+    {
+        "title": "Besame mucho",
+        "location": "styles/latin/besameMucho"
+    },
+    {
+        "title": "Black Orpheus",
+        "location": "styles/latin/blackOrpheus"
+    },
+    {
+        "title": "Blue bossa",
+        "location": "styles/latin/blueBossa"
+    },
+    {
+        "title": "Brazil",
+        "location": "styles/latin/brazil"
+    },
+    {
+        "title": "Brown skin girl",
+        "location": "styles/latin/brownSkinGirl"
+    },
+    {
+        "title": "Bustamento",
+        "location": "styles/latin/bustamento"
+    },
+    {
+        "title": "Call me",
+        "location": "styles/latin/callMe"
+    },
+    {
+        "title": "Cantaloupe island",
+        "location": "styles/latin/cantaloupeIsland"
+    },
+    {
+        "title": "Chega de saudade",
+        "location": "styles/latin/chegaDeSaudade"
+    },
+    {
+        "title": "Cherry pink",
+        "location": "styles/latin/cherryPink"
+    },
+    {
+        "title": "Come candellia",
+        "location": "styles/latin/comeCandellia"
+    },
+    {
+        "title": "Corcovado",
+        "location": "styles/latin/corcovado"
+    },
+    {
+        "title": "Delicado",
+        "location": "styles/latin/delicado"
+    },
+    {
+        "title": "Desafinado",
+        "location": "styles/latin/desafinado"
+    },
+    {
+        "title": "El Cumbachero",
+        "location": "styles/latin/elCumbachero"
+    },
+    {
+        "title": "Estate",
+        "location": "styles/latin/estate"
+    },
+    {
+        "title": "Europa",
+        "location": "styles/latin/europa"
+    },
+    {
+        "title": "Everywhere Calypso",
+        "location": "styles/latin/everywhereCalypso"
+    },
+    {
+        "title": "Favela",
+        "location": "styles/latin/favela"
+    },
+    {
+        "title": "Feelings",
+        "location": "styles/latin/feelings"
+    },
+    {
+        "title": "Frenesi",
+        "location": "styles/latin/frenesi"
+    },
+    {
+        "title": "I will wait for you",
+        "location": "styles/latin/iWillWaitForYou"
+    },
+    {
+        "title": "Jazz'n Samba",
+        "location": "styles/latin/jazzNSamba"
+    },
+    {
+        "title": "La Colegiala",
+        "location": "styles/latin/laColegiala"
+    },
+    {
+        "title": "La Rosita",
+        "location": "styles/latin/laRosita"
+    },
+    {
+        "title": "La rua Madureira",
+        "location": "styles/latin/laRuaMadureira"
+    },
+    {
+        "title": "Little Boat",
+        "location": "styles/latin/littleBoat"
+    },
+    {
+        "title": "Mambo Inn",
+        "location": "styles/latin/mamboInn"
+    },
+    {
+        "title": "Meditation",
+        "location": "styles/latin/meditation"
+    },
+    {
+        "title": "Moliendo Café",
+        "location": "styles/latin/moliendoCafe"
+    },
+    {
+        "title": "My little suede shoes",
+        "location": "styles/latin/myLittleSuedeShoes"
+    },
+    {
+        "title": "Nica's dream",
+        "location": "styles/latin/nicaSDream"
+    },
+    {
+        "title": "One note Samba en SOL",
+        "location": "styles/latin/oneNoteSambaEnSol"
+    },
+    {
+        "title": "One note samba",
+        "location": "styles/latin/oneNoteSamba"
+    },
+    {
+        "title": "Patricia",
+        "location": "styles/latin/patricia"
+    },
+    {
+        "title": "Perfidia",
+        "location": "styles/latin/perfidia"
+    },
+    {
+        "title": "Pra machucar meu coracao",
+        "location": "styles/latin/praMachucarMeuCoracao"
+    },
+    {
+        "title": "Recado bossa nova",
+        "location": "styles/latin/recadoBossaNova"
+    },
+    {
+        "title": "Sabor a mi",
+        "location": "styles/latin/saborAMi"
+    },
+    {
+        "title": "Saint Thomas",
+        "location": "styles/latin/saintThomas"
+    },
+    {
+        "title": "Samba de Orfeu",
+        "location": "styles/latin/sambaDeOrfeu"
+    },
+    {
+        "title": "Samba triste",
+        "location": "styles/latin/sambaTriste"
+    },
+    {
+        "title": "Siboney",
+        "location": "styles/latin/siboney"
+    },
+    {
+        "title": "Song for my father",
+        "location": "styles/latin/songForMyFather"
+    },
+    {
+        "title": "Soul bossa nova",
+        "location": "styles/latin/soulBossaNova"
+    },
+    {
+        "title": "Spanish go round",
+        "location": "styles/latin/spanishGoRound"
+    },
+    {
+        "title": "Summer samba",
+        "location": "styles/latin/summerSamba"
+    },
+    {
+        "title": "Sway",
+        "location": "styles/latin/sway"
+    },
+    {
+        "title": "Tequila",
+        "location": "styles/latin/tequila"
+    },
+    {
+        "title": "The Girl from Ipanema",
+        "location": "styles/latin/theGirlFromIpanema"
+    },
+    {
+        "title": "The Jive Samba",
+        "location": "styles/latin/theJiveSamba"
+    },
+    {
+        "title": "The breeze and I",
+        "location": "styles/latin/theBreezeAndI"
+    },
+    {
+        "title": "The fox",
+        "location": "styles/latin/theFox"
+    },
+    {
+        "title": "Tico Tico",
+        "location": "styles/latin/ticoTico"
+    },
+    {
+        "title": "Trust in me",
+        "location": "styles/latin/trustInMe"
+    },
+    {
+        "title": "Voce abusou",
+        "location": "styles/latin/voceAbusou"
+    },
+    {
+        "title": "Watch what happens",
+        "location": "styles/latin/watchWhatHappens"
+    },
+    {
+        "title": "Watermelon man",
+        "location": "styles/latin/watermelonMan"
+    },
+    {
+        "title": "Wave",
+        "location": "styles/latin/wave"
+    },
+    {
+        "title": "You are the sunshine of my life",
+        "location": "styles/latin/youAreTheSunshineOfMyLife"
+    },
+    {
+        "title": "Espana cani",
+        "location": "styles/marches/espanaCani"
+    },
+    {
+        "title": "Aquarius",
+        "location": "styles/movie/aquarius"
+    },
+    {
+        "title": "Exodus",
+        "location": "styles/movie/exodus"
+    },
+    {
+        "title": "Once upon a time in the west",
+        "location": "styles/movie/onceUponATimeInTheWest"
+    },
+    {
+        "title": "Firth of fifth",
+        "location": "styles/rock/firthOfFifth"
+    },
+    {
+        "title": "A swingin' safari",
+        "location": "styles/schlager/aSwinginSafari"
+    },
+    {
+        "title": "A taste of honey",
+        "location": "styles/schlager/aTasteOfHoney"
+    },
+    {
+        "title": "Boarisch Medley",
+        "location": "styles/schlager/boarischMedley"
+    },
+    {
+        "title": "Connemara",
+        "location": "styles/schlager/connemara"
+    },
+    {
+        "title": "I'm looking for freibier",
+        "location": "styles/schlager/iMLookingForFreibier"
+    },
+    {
+        "title": "The lonely shepherd",
+        "location": "styles/schlager/theLonelyShepherd"
+    },
+    {
+        "title": "The spanish flea",
+        "location": "styles/schlager/theSpanishFlea"
+    },
+    {
+        "title": "Trompetenecho",
+        "location": "styles/schlager/trompetenecho"
+    },
+    {
+        "title": "Wonderland by night",
+        "location": "styles/schlager/wonderlandByNight"
+    },
+    {
+        "title": "Adios Nonino",
+        "location": "styles/tango/adiosNonino"
+    },
+    {
+        "title": "Adios muchachos",
+        "location": "styles/tango/adiosMuchachos"
+    },
+    {
+        "title": "Caminito",
+        "location": "styles/tango/caminito"
+    },
+    {
+        "title": "Libertango",
+        "location": "styles/tango/libertango"
+    },
+    {
+        "title": "Oblivion",
+        "location": "styles/tango/oblivion"
+    },
+    {
+        "title": "Poema",
+        "location": "styles/tango/poema"
+    },
+    {
+        "title": "Por una cabesa",
+        "location": "styles/tango/porUnaCabesa"
+    },
+    {
+        "title": "A child is born",
+        "location": "styles/valse/aChildIsBorn"
+    },
+    {
+        "title": "Alice in wonderland",
+        "location": "styles/valse/aliceInWonderland"
+    },
+    {
+        "title": "All blues",
+        "location": "styles/valse/allBlues"
+    },
+    {
+        "title": "Bluesette",
+        "location": "styles/valse/bluesette"
+    },
+    {
+        "title": "Footprints",
+        "location": "styles/valse/footprints"
+    },
+    {
+        "title": "Full house",
+        "location": "styles/valse/fullHouse"
+    },
+    {
+        "title": "Indifférence",
+        "location": "styles/valse/indifference"
+    },
+    {
+        "title": "Irlandaise (l')",
+        "location": "styles/valse/irlandaiseL"
+    },
+    {
+        "title": "La petite fille de la mer",
+        "location": "styles/valse/laPetiteFilleDeLaMer"
+    },
+    {
+        "title": "Mannix theme",
+        "location": "styles/valse/mannixTheme"
+    },
+    {
+        "title": "Moon river",
+        "location": "styles/valse/moonRiver"
+    },
+    {
+        "title": "My favorite things",
+        "location": "styles/valse/myFavoriteThings"
+    },
+    {
+        "title": "Some day my prince will come",
+        "location": "styles/valse/someDayMyPrinceWillCome"
+    },
+    {
+        "title": "Mario's Theme",
+        "location": "styles/videoGame/marioSTheme"
+    }
+]

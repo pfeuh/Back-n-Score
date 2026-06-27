@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Test track tree</title>
+</head>
+
+<style>
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+/* barre du haut */
+#commands {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100px;
+    background: #ddd;
+}
+
+/* zone principale scrollable */
+#content {
+    position: absolute;
+    top: 100px;      /* juste sous la barre */
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow-y: auto; /* scrolling vertical */
+}
+
+</style>
+
+<body>
+
+<div id="commands">
+    <div id="infobar"></div>
+    <div id="breadcrumb"></div>
+</div>
+<div id="content"></div>
+
+<script>
+var commands = document.getElementById("commands");
+var content = document.getElementById("content");
+var infobar = document.getElementById("infobar");
+var breadcrumb = document.getElementById("breadcrumb");
+var navStack = [];
+
+function trackRequested(title, location)
+{
+
+    infobar.innerText = title + " --- " + location;
+    console.log("trackRequested " + title + " --- " + location);
+    send_msg(location);
+}
+
+</script>
+
+<script id="track-tree" type="application/json">
+#TREE#
+</script>
+
+<script>
+var TRACK_TREE = JSON.parse(
+  document.getElementById("track-tree").textContent
+);
+
+// Envoyer un message au serveur
+function send_msg(msg)
+{
+    fetch('/', {
+        method: 'POST',
+        body: msg
+    })
+    .then(response => response.text())
+    .then(data => console.log(data)); // Affiche la réponse du serveur
+}
+
+function renderTree(tree, basePath) {
+    content.innerHTML = "";
+    basePath = basePath || "";
+    navStack = basePath ? basePath.split("/") : [];
+
+    // --- Navigation (Breadcrumb) ---
+    breadcrumb.innerHTML = "";
+    if (navStack.length > 0) {
+        var back = document.createElement("span");
+        back.innerText = "← ";
+        back.style.cursor = "pointer";
+        back.onclick = function() {
+            navStack.pop();
+            renderTree(tree, navStack.join("/"));
+        };
+        breadcrumb.appendChild(back);
+    }
+
+    for (var i = 0; i < navStack.length; i++) {
+        (function(i) {
+            var part = document.createElement("span");
+            part.innerText = navStack[i];
+            part.style.cursor = "pointer";
+            part.onclick = function() {
+                var newPath = navStack.slice(0, i + 1).join("/");
+                renderTree(tree, newPath);
+            };
+            breadcrumb.appendChild(part);
+            if (i < navStack.length - 1) breadcrumb.appendChild(document.createTextNode(" / "));
+        })(i);
+    }
+
+    // --- Logique des Nœuds ---
+    function getVisibleNodes() {
+        var groups = {};
+        for (var i = 0; i < tree.length; i++) {
+            var item = tree[i];
+            var loc = item.location;
+            if (basePath !== "") {
+                if (loc.indexOf(basePath + "/") !== 0) continue;
+                loc = loc.substring(basePath.length + 1);
+            }
+            var parts = loc.split("/");
+            var next = parts[0];
+            if (!next) continue;
+            var fullPath = (basePath ? basePath + "/" : "") + next;
+            if (!groups[next]) {
+                groups[next] = {
+                    display: next,
+                    location: fullPath,
+                    isLeaf: (parts.length === 1)
+                };
+                if (groups[next].isLeaf) {
+                    groups[next].display = item.title;
+                }
+            }
+        }
+        var res = [];
+        for (var k in groups) { if (groups.hasOwnProperty(k)) res.push(groups[k]); }
+        return res;
+    }
+
+    function hasChildren(loc) {
+        var prefix = loc + "/";
+        for (var i = 0; i < tree.length; i++) {
+            if (tree[i].location.indexOf(prefix) === 0) return true;
+        }
+        return false;
+    }
+
+    // --- Génération de l'affichage ---
+    var nodes = getVisibleNodes();
+
+    for (var i = 0; i < nodes.length; i++) {
+        (function(node) {
+            var div = document.createElement("div");
+            div.style.padding = "18px";
+            div.style.fontSize = "20px";
+            div.style.cursor = "pointer";
+
+            var isFolder = hasChildren(node.location);
+            var icon = "";
+
+            if (!isFolder) {
+                icon = "🎵 "; 
+            } else {
+                var depth = node.location.split("/").length;
+                if (depth <= 1) {
+                    icon = "🗄️ "; 
+                } else {
+                    icon = "📘 "; 
+                }
+            }
+
+            div.innerText = icon + node.display;
+
+            div.onclick = function() {
+                if (isFolder) {
+                    renderTree(tree, node.location);
+                } else {
+                    trackRequested(node.display, node.location);
+                }
+            };
+
+            content.appendChild(div);
+        })(nodes[i]);
+    }
+}
+
+renderTree(TRACK_TREE)
+
+</script>
+
+</body>
+</html>

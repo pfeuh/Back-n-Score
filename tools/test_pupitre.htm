@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Back'n Score - Musicien</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; line-height: 1.6; }
+        .card { border: 1px solid #ccc; padding: 15px; border-radius: 8px; background: #f9f9f9; max-width: 400px; }
+        .status { font-weight: bold; color: #2c3e50; }
+        .controls { margin-top: 20px; }
+        button { padding: 10px; cursor: pointer; }
+    </style>
+</head>
+
+<style>
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+/* barre du haut */
+#commands {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 50%;
+    background: #ddd;
+}
+
+/* zone principale scrollable */
+#content {
+    position: absolute;
+    top: 50%;      /* juste sous la barre */
+    left: 0;
+    right: 0;
+    width:50%;
+    bottom: 0;
+    overflow-y: auto; /* scrolling vertical */
+}
+
+</style>
+
+<body>
+
+<h1>Page Musicien</h1>
+
+<div id="commands">
+    <div class="card">
+        <p>Mon ID Unique : <span id="uuid-display" class="status">Chargement...</span></p>
+        <p>Instrument actuel : <span id="instr-display" class="status">Chargement...</span></p>
+        <p>Type tablette : <span id="type-display" class="status">Chargement...</span></p>
+    </div>
+    <div class="controls">
+        <button onclick="changerInstrument('DO')">DO</button>
+        <button onclick="changerInstrument('SIB')">SIb</button>
+        <button onclick="changerInstrument('MIb')">MIb</button>
+        <button id="pp" onclick="afficherOrientation()">not yet detected</button>
+    </div>
+</div>
+<div id="content" style="background-color: lightblue;"></div>
+
+<script>
+
+var content = document.getElementById("content");
+var pp = document.getElementById("pp"); // portrait/paysage
+var HAUTEUR_BANDEAU_VOIX = 80; // Valeur en pixels
+var voixChoisie = localStorage.getItem('musicien_voix') || "1";
+
+// 1. Générateur d'ID (Version compatible Android 4)
+function generateUUID()
+{
+    return 'id-' + Math.random().toString(36).substr(2, 9) + '-' + new Date().getTime();
+}
+
+function getOrientation(elementOrId)
+{
+    var el = typeof elementOrId === 'string' 
+               ? document.getElementById(elementOrId) 
+               : elementOrId;
+
+    if (!el) return "portrait"; // Valeur par défaut si l'élément n'existe pas
+
+    var largeur = el.clientWidth;
+    var hauteur = el.clientHeight;
+
+    // Si la largeur est supérieure à la hauteur, on est en paysage
+    return (largeur > hauteur) ? "paysage" : "portrait";
+}
+
+
+// 2. Détection du type (Sécurisée)
+function detecterType()
+{
+    var ua = navigator.userAgent;
+    var type = "PDF"; // Par défaut, on part sur PDF
+    
+    if (ua && ua.indexOf("Android 4.") !== -1)
+    { 
+        type = "IMAGES"; 
+    }
+    
+    return type;
+}
+
+// 3. Mise à jour de l'affichage (Plus directe)
+function mettreAJourAffichage(id, instrument, type) 
+{
+    // Si la valeur est nulle ou vide, on met un texte de secours
+    var affichageType = type ? type : "PDF (auto)";
+
+    document.getElementById('uuid-display').innerHTML = id;
+    document.getElementById('instr-display').innerHTML = instrument;
+    document.getElementById('type-display').innerHTML = affichageType;
+    afficherOrientation(content);
+}
+
+// 4. Logique de démarrage
+function initialisation()
+{
+    var monID = localStorage.getItem('musicien_uuid');
+    var monInstrument = localStorage.getItem('musicien_instrument');
+    var monType = localStorage.getItem('musicien_type');
+
+    if (!monID)
+    {
+        monID = generateUUID();
+        monInstrument = "DO";
+        monType = detecterType();
+        
+        localStorage.setItem('musicien_uuid', monID);
+        localStorage.setItem('musicien_instrument', monInstrument);
+        localStorage.setItem('musicien_type', monType);
+    }
+
+    mettreAJourAffichage(monID, monInstrument, monType);
+}
+
+// 5. Fonction pour changer l'instrument
+function changerInstrument(nouvelInstr)
+{
+    localStorage.setItem('musicien_instrument', nouvelInstr);
+    var monID = localStorage.getItem('musicien_uuid');
+    var monType = localStorage.getItem('musicien_type');
+    mettreAJourAffichage(monID, nouvelInstr, monType);
+}
+
+function afficherOrientation()
+{
+    pp.innerText = getOrientation(content);
+}
+
+function annulerSelection() {
+    // Pour le test, on vide juste le div ou on revient à l'état initial
+    document.getElementById('content').innerHTML = "<p style='padding:20px;'>Sélection annulée. Prêt pour la suite.</p>";
+}
+
+// Lancement
+initialisation();
+;
+
+</script>
+</body>
+</html>

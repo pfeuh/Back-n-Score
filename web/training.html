@@ -1,0 +1,41 @@
+<!-- # -*- coding: utf-8 -*- -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html" charset="utf-8"/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Back'n Score Training Page</title>
+    <link rel="stylesheet" href="/static/css/training.css">
+    <link rel="icon" href="data:,">
+</head>
+<body>
+
+<div id="menu">
+    <div id="transport-bar">
+        <button class="btn" onclick="sendPlayerCMD('rewind')">◀◀</button>
+        <button class="btn" onclick="sendPlayerCMD('play')">▶</button>
+        <button class="btn" onclick="sendPlayerCMD('stop')">■</button>
+        <button class="btn" onclick="sendPlayerCMD('ff')">▶▶</button>
+        <div class="separator"></div>
+        <button class="btn" onclick="sendPlayerCMD('goto_a')">A</button>
+        <button class="btn" onclick="sendPlayerCMD('goto_b')">B</button>
+        <button class="btn" onclick="sendPlayerCMD('goto_c')">C</button>
+        <button class="btn" onclick="sendPlayerCMD('goto_d')">D</button>
+    </div>
+    
+    <div id="tree">
+        <h3 class="header">Library</h3>
+    </div>
+</div>
+
+<div id="content">
+</div>
+
+<script src="/static/js/score.js"></script> 
+<script src="/static/js/objects.js"></script>
+<script src="/static/js/network.js"></script>
+<script src="/static/js/training.js"></script>
+
+</body>
+</html>

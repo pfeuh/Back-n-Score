@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Back 'n Score - Bibliothèque</title>
+    <style>
+        :root {
+            --bg-color: #121214;
+            --tree-bg: #1a1a1e;
+            --border-color: #2a2a30;
+            --text-color: #e2e8f0;
+            --text-muted: #64748b;
+            --accent-color: #f1c40f; /* Ton jaune pour la sélection */
+            --selected-bg: #1e1b4b;   /* Fond bleu nuit pour l'élément actif */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 10px;
+            min-height: 100vh;
+        }
+
+        #content {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            background: var(--tree-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        /* En-tête fixe du panneau */
+        .tree-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #222226;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tree-header h2 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .btn-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 18px;
+            cursor: pointer;
+            padding: 0 5px;
+        }
+
+        /* Zone de l'arbre */
+        #tree-container {
+            padding: 10px 0;
+            max-height: 80vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Structure de l'arbre */
+        .tree-node {
+            list-style: none;
+            padding-left: 20px; /* Décalage des sous-dossiers */
+        }
+
+        /* Racine de l'arbre (pas de décalage initial) */
+        #track-tree-root {
+            padding-left: 0;
+        }
+
+        /* Style des lignes (Dossiers et Tracks) */
+        .tree-row {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            cursor: pointer;
+            user-select: none;
+            border-bottom: 1px solid #1f1f23;
+            font-size: 15px;
+            transition: background 0.15s ease;
+        }
+
+        .tree-row:active, .tree-row:hover {
+            background-color: #222226;
+        }
+
+        /* Classe de sélection pour le morceau actif */
+        .tree-row.selected {
+            background-color: var(--selected-bg) !important;
+            color: var(--accent-color) !important;
+            border-left: 4px solid var(--accent-color);
+            font-weight: 600;
+        }
+
+        /* Icônes et flèches */
+        .icon {
+            margin-right: 10px;
+            font-size: 16px;
+            display: inline-block;
+            width: 20px;
+            text-align: center;
+        }
+
+        .caret {
+            margin-right: 5px;
+            font-size: 12px;
+            color: var(--text-muted);
+            transition: transform 0.2s ease;
+            width: 12px;
+            display: inline-block;
+        }
+
+        /* Pivotement de la flèche quand le dossier est ouvert */
+        .caret.open {
+            transform: rotate(90deg);
+        }
+
+        /* Masquage des sous-dossiers fermés */
+        .nested-nodes {
+            display: none;
+        }
+
+        .nested-nodes.open {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="content">
+        <div class="tree-header">
+            <h2>🏠 Bibliothèque de Tracks</h2>
+            <button class="btn-close" onclick="closeTreeView()">✖</button>
+        </div>
+        <div id="tree-container">
+            <ul id="track-tree-root"></ul>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. SÉCURITÉ ET FONCTIONS IP VUES / SERVEUR ---
+        if (typeof track_location === "undefined") {
+            var _fallbackLoc = "";
+            var track_location = {
+                get: function() { return _fallbackLoc; },
+                set: function(val) { _fallbackLoc = val; }
+            };
+        }
+
+        // Ta fonction originale qui fonctionne parfaitement avec ton serveur
+        function updateServerTrack(newLocation) {
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/update_track", true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    // Une fois la mise à jour serveur confirmée, on ferme la vue de l'arbre
+                    if (typeof closeTreeView === "function") closeTreeView();
+                }
+            };
+
+            var data = JSON.stringify({ location: newLocation });
+            xhr.send(data);
+        }
+
+        // --- 2. LOGIQUE DE CONSTRUCTION DU TREE ---
+
+        /**
+         * Étape A : Transforme le tableau plat DATA_TRACKS en un objet Arbre imbriqué
+         */
+        function buildTreeStructure(tracks) {
+            var root = { files: [], dirs: {} };
+            if (!tracks || !tracks.length) return root;
+
+            for (var i = 0; i < tracks.length; i++) {
+                var track = tracks[i];
+                var loc = track.location || "";
+                var parts = loc.split('/');
+                var current = root;
+
+                for (var j = 0; j < parts.length - 1; j++) {
+                    var dirName = parts[j];
+                    if (!current.dirs[dirName]) {
+                        current.dirs[dirName] = { files: [], dirs: {} };
+                    }
+                    current = current.dirs[dirName];
+                }
+                current.files.push(track);
+            }
+            return root;
+        }
+
+        /**
+         * Étape B : Génère récursivement le DOM à partir de la structure objet
+         */
+        function renderTree(node, containerElement) {
+            var lastLoc = track_location.get();
+
+            // 1. Rendu des Dossiers à ce niveau
+            for (var dirName in node.dirs) {
+                var li = document.createElement('li');
+                li.className = 'tree-node';
+
+                var row = document.createElement('div');
+                row.className = 'tree-row';
+                
+                var cleanDirName = dirName.replace(/([A-Z])/g, ' $1').replace(/_/g, " ").trim();
+                row.innerHTML = '<span class="caret">▶</span><span class="icon">📁</span>' + cleanDirName;
+
+                var subUl = document.createElement('ul');
+                subUl.className = 'nested-nodes';
+
+                row.onclick = (function(targetUl, targetCaret) {
+                    return function(e) {
+                        e.stopPropagation();
+                        var isOpen = targetUl.classList.toggle('open');
+                        if (isOpen) {
+                            targetCaret.classList.add('open');
+                        } else {
+                            targetCaret.classList.remove('open');
+                        }
+                    };
+                })(subUl, row.querySelector('.caret'));
+
+                li.appendChild(row);
+                li.appendChild(subUl);
+                containerElement.appendChild(li);
+
+                renderTree(node.dirs[dirName], subUl);
+                
+                if (lastLoc && lastLoc.indexOf(dirName + "/") !== -1) {
+                    subUl.classList.add('open');
+                    row.querySelector('.caret').classList.add('open');
+                }
+            }
+
+            // 2. Rendu des Fichiers (Tracks) à ce niveau
+            for (var k = 0; k < node.files.length; k++) {
+                (function(track) {
+                    var li = document.createElement('li');
+                    li.className = 'tree-node';
+
+                    var row = document.createElement('div');
+                    row.className = 'tree-row';
+                    
+                    var isSelected = (track.location === lastLoc);
+                    if (isSelected) {
+                        row.classList.add('selected');
+                    }
+
+                    var cleanTitle = track.title ? track.title.replace(/_/g, " ") : "Sans titre";
+                    row.innerHTML = '<span class="caret" style="visibility:hidden;">▶</span><span class="icon">🎵</span>' + cleanTitle;
+
+                    row.onclick = function(e) {
+                        e.stopPropagation();
+                        
+                        document.querySelectorAll('.tree-row').forEach(r => r.classList.remove('selected'));
+                        row.classList.add('selected');
+
+                        // 1. Mise à jour du store local
+                        track_location.set(track.location);
+
+                        // 2. Appel de ta fonction XMLHttpRequest native pour avertir le serveur
+                        updateServerTrack(track.location);
+                    };
+
+                    li.appendChild(row);
+                    containerElement.appendChild(li);
+
+                    if (isSelected) {
+                        setTimeout(function() {
+                            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }, 200);
+                    }
+                })(node.files[k]);
+            }
+        }
+
+        // --- 3. CHARGEMENT INITIAL (db_tracks.json) ---
+        window.onload = function() {
+            var rootContainer = document.getElementById('track-tree-root');
+            rootContainer.innerHTML = "<li class='tree-node' style='padding:15px; color:var(--text-muted);'>Chargement de la bibliothèque...</li>";
+
+            fetch('/server_data/db_tracks.json')
+                .then(function(response) {
+                    if (!response.ok) throw new Error("Erreur HTTP: " + response.status);
+                    return response.json();
+                })
+                .then(function(dataTracks) {
+                    rootContainer.innerHTML = "";
+                    var treeData = buildTreeStructure(dataTracks);
+                    renderTree(treeData, rootContainer);
+                })
+                .catch(function(error) {
+                    console.error("Erreur lors de la récupération du JSON :", error);
+                    rootContainer.innerHTML = "<li class='tree-node' style='padding:15px; color:red;'>Impossible de charger db_tracks.json (" + error.message + ").</li>";
+                });
+        };
+    </script>
+</body>
+</html>

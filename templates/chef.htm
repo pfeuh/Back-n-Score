@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head><title>Page du Chef</title></head>
+<body>
+    <h1>Interface du Chef</h1>
+    <input id="input_chef" type="text" placeholder="Entrez un ordre...">
+    <button onclick="envoyer()">Diffuser</button>
+
+    <!-- FIX MINIMUM : Socket.IO v4 compatible serveur -->
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+    <script>
+        var socket = io(window.location.origin);
+
+        function envoyer() {
+            var msg = document.getElementById('input_chef').value;
+            socket.emit('envoi_chef', {texte: msg});
+        }
+
+        socket.on('connect', function() {
+            console.log("connecté");
+        });
+
+        socket.on('diffusion', function(data) {
+            console.log("reçu :", data);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+{
+    "action": "connect_request",
+    "role": "chef" # ou "musician"
+}
+
+{
+    "action": "authenticate",
+    "password": "mon_mot_de_passe"
+}
+
+{
+    "status": "aborted",
+    "message": "empty_password"
+}
+
+{
+    "action": "broadcast_score",
+    "score_id": "beethoven_symp5",
+    "title": "Symphonie n°5",
+    "tempo": 120
+}
+
+{
+    "event": "new_score_loaded",
+    "data": {
+        "title": "Symphonie n°5",
+        "file_url": "/static/scores/beethoven_5.pdf",
+        "tempo": 120
+    }
+}
+
+
+
+{
+    "action": "select_instrument",
+    "instrument": "Clarinet",
+    "transposition": "Bb"
+}

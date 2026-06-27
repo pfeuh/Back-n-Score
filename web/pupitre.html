@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Back'n Score V1.0</title>
+    <link rel="icon" href="data:,">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="/static/css/pupitre.css">
+</head>
+
+<body>
+
+    <div id="menu-bar">
+        <div class="menu-left">
+            <button class="menu-btn" onclick="uiSelectTrack() ">MORCEAU</button>
+        </div>
+
+        <div class="menu-right">
+        
+            <button id="bt_clock" class="menu-btn" style="background-color: #101010; ">12:34</button>
+        
+            <button id="bt_debug" class="menu-btn" style="background-color: #101010;" onclick="devDebug() ">🐢</button>
+        
+            <button id="instru-select" class="menu-btn" onclick="uiSelectInstrument() ">Instrument</button>
+            
+            <label class="solo-label">
+                <input type="checkbox" id="easy-check" onchange="setEasy(this.checked)">
+                <span>EASY</span>
+            </label>
+
+            <select id="voice-sel" class="custom-select" onchange="setVoice(this.value)">
+                <option value="1">Voix 1</option>
+                <option value="2">Voix 2</option>
+                <option value="3">Voix 3</option>
+                <option value="4">Voix 4</option>
+            </select>
+            
+            <label class="solo-label">
+                <input type="checkbox" id="solo-check" onchange="setSolo(this.checked)">
+                <span>SOLO</span>
+            </label>
+
+            <div id="mode-toggle" class="menu-btn" onclick="setMode()">---</div>
+        </div>
+    </div>
+
+    <div id="content"></div>
+
+    <script src="/static/js/score.js"></script>
+    <script src="/static/js/objects.js"></script>
+    <script src="/static/js/tree.js"></script>
+    <script src="/static/js/pupitre.js"></script>
+    <script src="/static/js/network.js"></script>
+    <script src="/static/js/clock.js"></script>
+
+</body>
+</html>

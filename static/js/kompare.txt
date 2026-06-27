@@ -1,0 +1,264 @@
+function uiSelectInstrument() {
+    var path = localStorage.getItem("last_inst_path") || "";
+    var currentMode = instru_select_mode.get(); 
+
+    if (path === "" || path.indexOf(currentMode) !== 0) {
+        path = currentMode;
+    }
+
+    // CORRECTION : On remonte d'un niveau pour afficher le dossier parent dans le tree
+    var lastSlash = path.lastIndexOf("/");
+    var folderPath = path;
+    if (lastSlash !== -1) {
+        folderPath = path.substring(0, lastSlash);
+    }
+    
+    loadView('instruments', folderPath);
+}
+
+function uiOpenTracks() {
+    var currentPath = track_location.get() || "";
+    var lastSlash = currentPath.lastIndexOf("/");
+    var folderPath = "";
+    
+    if (lastSlash !== -1) {
+        folderPath = currentPath.substring(0, lastSlash);
+    }
+
+    loadView('tracks', folderPath);
+}
+
+function prepareTreeInterface() {
+    var mainContent = document.getElementById('content');
+    mainContent.innerHTML = ""; 
+    mainContent.style.overflow = "hidden";
+
+    // MODIFICATION : Bloque la barre de menu
+    document.body.classList.add('tree-open');
+
+    var navHost = document.createElement('div');
+    navHost.id = "breadcrumb";
+    navHost.style.position = "absolute";
+    navHost.style.top = "0";
+    navHost.style.left = "0";
+    navHost.style.right = "0";
+    navHost.style.height = "50px";
+    navHost.style.background = "#333";
+    navHost.style.zIndex = "10";
+    mainContent.appendChild(navHost);
+
+    var treeHost = document.createElement('div');
+    treeHost.id = "tree-container";
+    treeHost.style.position = "absolute";
+    treeHost.style.top = "50px"; 
+    treeHost.style.bottom = "0"; 
+    treeHost.style.left = "0";
+    treeHost.style.right = "0";
+    
+    treeHost.style.overflowY = "scroll"; 
+    treeHost.style.webkitOverflowScrolling = "touch";
+    
+    mainContent.appendChild(treeHost);
+}
+
+function addTreeRow(text, onClick, isSelected, container) {
+    var div = document.createElement("div");
+    div.className = "item-row";
+    div.style.display = "block";
+    div.style.width = "100%";
+    div.style.padding = "15px 10px"; 
+    div.style.borderBottom = "1px solid #444";
+    div.style.boxSizing = "border-box"; 
+    div.style.cursor = "pointer";
+    
+    var cleanText = text.replace(/_/g, " ");
+    div.innerHTML = isSelected ? "<b>" + cleanText + "</b>" : cleanText;
+    
+    if (isSelected) {
+        div.style.backgroundColor = "#444";
+        div.style.color = "#f1c40f";
+
+        setTimeout(function() {
+            div.scrollIntoView(false);
+        }, 150); 
+    }
+
+    div.onclick = onClick;
+    container.appendChild(div);
+}
+
+function loadView(viewType, path) {
+    stopPooling();
+    prepareTreeInterface(); 
+    
+    var container = document.getElementById('breadcrumb');
+    var treeDiv = document.getElementById('tree-container');
+
+    renderNavigation(viewType, path, container);
+    
+    if (viewType === 'tracks') {
+        renderTrackTree(DATA_TRACKS, path, treeDiv);
+    } else {
+        renderInstrumentTree(path, treeDiv);
+    }
+}
+
+function renderNavigation(view, path, container) {
+    container.innerHTML = ""; 
+    container.style.display = "block";
+    container.style.width = "100%";
+    container.style.height = "50px";
+    container.style.overflow = "hidden";
+
+    var rightCell = document.createElement("div");
+    rightCell.style.float = "right";
+    rightCell.style.width = "50px";
+    rightCell.style.lineHeight = "50px";
+    rightCell.style.textAlign = "center";
+    
+    var cancelBtn = document.createElement("div"); 
+    cancelBtn.className = "btn-cancel";
+    cancelBtn.innerText = "✖";
+    cancelBtn.onclick = closeTreeView; 
+    rightCell.appendChild(cancelBtn);
+
+    var leftCell = document.createElement("div");
+    leftCell.style.overflowX = "auto"; 
+    leftCell.style.whiteSpace = "nowrap"; 
+    leftCell.style.lineHeight = "50px";
+
+    container.appendChild(rightCell); 
+    container.appendChild(leftCell);  
+
+    var rootBtn = document.createElement("div"); 
+    rootBtn.style.display = "inline-block"; 
+    rootBtn.style.padding = "0 5px";
+    rootBtn.style.cursor = "pointer";
+    rootBtn.style.color = "#FFF";
+    rootBtn.innerText = (view === 'tracks' ? "🏠 Biblio" : "🏠 Instr.");
+    rootBtn.onclick = function() { loadView(view, ""); }; 
+    leftCell.appendChild(rootBtn);
+
+    if (path && path !== "") {
+        var parts = [];
+        var splitPath = path.split("/");
+        for (var k = 0; k < splitPath.length; k++) {
+            if (splitPath[k] && splitPath[k].length > 0) {
+                parts.push(splitPath[k]);
+            }
+        }
+
+        var cumulativePath = "";
+        for (var i = 0; i < parts.length; i++) {
+            cumulativePath += (i === 0 ? "" : "/") + parts[i];
+            var isLast = (i === parts.length - 1);
+
+            (function(segmentName, targetPath, last) {
+                var sep = document.createElement("span");
+                sep.innerText = " > ";
+                sep.style.color = "#888";
+                leftCell.appendChild(sep);
+
+                var segment = document.createElement("div"); 
+                segment.style.display = "inline-block";
+                segment.style.padding = "0 5px";
+                segment.style.fontSize = "18px";
+                segment.innerText = segmentName.replace(/([A-Z])/g, ' $1').trim();
+
+                if (last) {
+                    segment.style.color = "#f1c40f"; 
+                    segment.style.fontWeight = "bold";
+                    segment.style.cursor = "default";
+                } else {
+                    segment.style.color = "#FFFFFF"; 
+                    segment.style.cursor = "pointer";
+                    segment.onclick = function() { loadView(view, targetPath); };
+                }
+                leftCell.appendChild(segment);
+            })(parts[i], cumulativePath, isLast);
+        }
+    }
+}
+
+function renderTrackTree(tree, basePath, container) {
+    var folders = {};
+    var lastLoc = track_location.get();
+
+    for (var i = 0; i < tree.length; i++) {
+        var item = tree[i];
+        var loc = item.location;
+        if (basePath && loc.indexOf(basePath + "/") !== 0) continue;
+        var relative = basePath ? loc.substring(basePath.length + 1) : loc;
+        var parts = relative.split("/");
+        var segment = parts[0];
+
+        if (parts.length > 1) {
+            if (!folders[segment]) {
+                var fullPath = (basePath ? basePath + "/" : "") + segment;
+                var depth = loc.split("/").length - fullPath.split("/").length;
+                folders[segment] = { icon: (depth === 1 ? "📘 " : "🗄️ "), path: fullPath };
+            }
+        } else {
+            (function(track) {
+                var isSelected = (track.location === lastLoc);
+                addTreeRow("🎵 " + track.title, function(){ 
+                    track_location.set(track.location);
+                    if (typeof updateServerTrack === "function") updateServerTrack(track.location);
+                    closeTreeView(); 
+                }, isSelected, container); 
+            })(item);
+        }
+    }
+
+    for (var f in folders) {
+        (function(name, info) {
+            var label = name.replace(/([A-Z])/g, ' $1').replace(/^./, function(str){ return str.toUpperCase(); }).trim();
+            addTreeRow(info.icon + label, function() { loadView('tracks', info.path); }, false, container);
+        })(f, folders[f]);
+    }
+    if (typeof checkSync === "function") checkSync(); 
+}
+
+function renderInstrumentTree(path, container) {
+    if (!path) { 
+        addTreeRow("📂 MODE POPULAR", function() { loadView('instruments', "POPULAR"); }, false, container); 
+        addTreeRow("📂 MODE CLASSIQUE", function() { loadView('instruments', "CLASSIQUE"); }, false, container); 
+        return; 
+    }
+
+    var parts = path.split("/");
+    var tempMode = parts[0]; 
+    var currentLevel = (tempMode === "POPULAR") ? DATA_UI_POPULAR : DATA_UI_CLASSIQUE;
+    
+    for (var i = 1; i < parts.length; i++) { if (currentLevel) currentLevel = currentLevel[parts[i]]; }
+
+    if (currentLevel instanceof Array) {
+        for (var k = 0; k < currentLevel.length; k++) {
+            (function(inst) { 
+                var isSelected = (inst === current_instrument.get() && tempMode === instru_select_mode.get());
+                addTreeRow("🎺 " + inst, function() { 
+                    instru_select_mode.set(tempMode); 
+                    localStorage.setItem("last_inst_path", path + "/" + inst);
+                    current_instrument.set(inst);
+                    closeTreeView();
+                }, isSelected, container); 
+            })(currentLevel[k]);
+        }
+    } else { 
+        for (var sub in currentLevel) { 
+            (function(s) { addTreeRow("📁 " + s, function() { loadView('instruments', path + "/" + s); }, false, container); })(sub); 
+        } 
+    }
+}
+
+function closeTreeView() {
+    var content = document.getElementById('content');
+    content.innerHTML = ""; 
+    content.style.overflow = "auto"; 
+    
+    // MODIFICATION : Libère la barre de menu
+    document.body.classList.remove('tree-open');
+    document.body.className = ""; 
+    
+    if (typeof startPooling === "function") startPooling(); 
+}
