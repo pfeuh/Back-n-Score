@@ -6,6 +6,7 @@ import socket
 import os
 import sys
 import json
+import subprocess
 
 # --- CONFIGURATION DES REPERTOIRES DE BASE ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -166,6 +167,10 @@ def selector():
 def pupitre(): 
     return send_from_directory(WEB_DIR, 'pupitre.html')
 
+@app.route('/admin')
+def admin(): 
+    return send_from_directory(WEB_DIR, 'admin.html')
+
 @app.route('/training')
 def training(): 
     return send_from_directory(WEB_DIR, 'training.html')
@@ -259,6 +264,22 @@ def update_track():
 def serve_scores(filename):
     return send_from_directory(DB_DIR, filename)
 
+@app.route('/api/admin/refresh', methods=['POST'])
+def admin_refresh():
+    try:
+        # Exécute le script python et attend qu'il se termine
+        # 'check=True' lève une exception si le script renvoie un code d'erreur (non-zéro)
+        result = subprocess.run(['python3', 'tools/updateDatabase.py'], 
+                                capture_output=True, 
+                                text=True, 
+                                check=True)
+        
+        print("Script Python exécuté avec succès:", result.stdout)
+        return jsonify({"success": True, "message": "Base de données synchronisée."}), 200
+
+    except subprocess.CalledProcessError as e:
+        print("Erreur lors de l'exécution du script Python:", e.stderr)
+        return jsonify({"success": False, "message": "Erreur lors du scan du disque."}), 500
 
 if __name__ == '__main__':
     host = CONFIG.get("SERVER_HOST", "0.0.0.0")
