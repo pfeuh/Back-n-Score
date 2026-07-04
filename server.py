@@ -7,6 +7,7 @@ import os
 import sys
 import json
 import subprocess
+import shutil
 
 # --- CONFIGURATION DES REPERTOIRES DE BASE ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -17,7 +18,7 @@ SCRIPTS_DIR = os.path.join(BASE_DIR, 'scripts')
 # Fichier de configuration externe (NE PAS ÉCRASER LORS DES MISES À JOUR)
 CONFIG_FILE = os.path.join(BASE_DIR, 'config.json')
 
-# Valeurs par défaut alignées sur ton fichier de config
+# Valeurs par défaut alignées sur ton fichier de config enrichi
 DEFAULT_CONFIG = {
     "DATABASE": os.path.abspath(os.path.join(BASE_DIR, '..', 'backNScoreData', 'database')),
     "LAST_TRACK_FILE": "lastTrackname.txt",
@@ -25,7 +26,11 @@ DEFAULT_CONFIG = {
     "PLAYER_PORT": 9999,
     "SERVER_HOST": "0.0.0.0",
     "PORT": 8000,
-    "DEBUG_MODE": False
+    "DEBUG_MODE": False,
+    "QR_CODE_DIR": os.path.join(BASE_DIR, 'static'),
+    "QR_CODE_WIFI_FILE": "qrcode_wifi.png",
+    "QR_CODE_LAN_FILE": "qrcode_lan.png",
+    "PROTOCOL": "http"
 }
 
 def load_config():
@@ -52,7 +57,7 @@ def load_config():
 # Chargement de la configuration
 CONFIG = load_config()
 
-# Correction ici : Utilisation de CONFIG["DATABASE"] pour correspondre à ton JSON
+# Utilisation de CONFIG["DATABASE"] pour correspondre à ton JSON
 DB_DIR = CONFIG["DATABASE"]
 LAST_TRACK_DIRNAME = os.path.join(SCRIPTS_DIR, CONFIG["LAST_TRACK_FILE"])
 
@@ -72,6 +77,118 @@ udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 
 # --- FONCTIONS UTILITAIRES ---
+
+def get_all_local_ips():
+    """
+    Récupère de manière robuste toutes les adresses IP IPv4 locales actives.
+    Exclut l'interface loopback (127.0.0.1).
+    Retourne une liste de tuples : [('nom_interface', 'ip'), ...]
+    """
+    interfaces_found = []
+    
+    # Étape 1 : On tente la méthode de la socket connectée (très fiable pour l'IP principale)
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        main_ip = s.getsockname()[0]
+        s.close()
+        if main_ip and main_ip != "127.0.0.1":
+            interfaces_found.append(("main", main_ip))
+    except Exception:
+        pass
+
+    # Étape 2 : On scanne via la commande système 'ip' pour choper les autres interfaces (comme le point d'accès wlan0)
+    try:
+        output = subprocess.check_output(["ip", "-o", "-4", "addr", "show"]).decode()
+        for line in output.split('\n'):
+            parts = line.split()
+            if len(parts) >= 4:
+                ifname = parts[1]
+                ip = parts[3].split('/')[0]
+                if ip != "127.0.0.1" and not ifname.startswith("lo") and "docker" not in ifname:
+                    interfaces_found.append((ifname, ip))
+    except Exception:
+        pass
+
+    # Nettoyage et dédoublonnage par adresse IP
+    unique_ips = {}
+    for ifname, ip in interfaces_found:
+        # On garde le vrai nom d'interface (ex: wlan0) si on l'a plutôt que "main"
+        if ip not in unique_ips or unique_ips[ip] == "main":
+            unique_ips[ip] = ifname
+
+    return [(ifname, ip) for ip, ifname in unique_ips.items()]
+
+def generate_qr_codes():
+    """Génère intelligemment les QR codes selon les interfaces réseau disponibles"""
+    try:
+        import qrcode
+    except ImportError:
+        print("Erreur : La bibliothèque 'qrcode' est introuvable. Exécute 'pip install qrcode[pil]'.")
+        return
+
+    output_dir = CONFIG.get("QR_CODE_DIR", os.path.join(BASE_DIR, 'static'))
+    port = CONFIG.get("PORT", 8000)
+    protocol = CONFIG.get("PROTOCOL", "http")
+
+    if not os.path.exists(output_dir):
+        try:
+            os.makedirs(output_dir, exist_ok=True)
+        except Exception as e:
+            print(f"Impossible de créer le répertoire des QR Codes : {e}")
+            return
+
+    def create_qr_if_changed(url, filename):
+        full_path = os.path.join(output_dir, filename)
+        memo_path = full_path + ".txt"
+        
+        # Anti-doublon carte SD
+        if os.path.exists(full_path) and os.path.exists(memo_path):
+            with open(memo_path, 'r', encoding='utf-8') as f:
+                if f.read().strip() == url:
+                    print(f"[Réseau] QR Code {filename} déjà à jour pour {url}.")
+                    return
+
+        # Écriture
+        qr = qrcode.QRCode(version=1, error_correction=qrcode.constants.ERROR_CORRECT_L, box_size=10, border=4)
+        qr.add_data(url)
+        qr.make(fit=True)
+        img = qr.make_image(fill_color="black", back_color="white")
+        img.save(full_path)
+        
+        with open(memo_path, 'w', encoding='utf-8') as f:
+            f.write(url)
+        try:
+            os.sync()
+        except AttributeError:
+            pass
+        print(f"[Réseau] QR Code {filename} MIS À JOUR -> {url}")
+
+    # Récupération des réseaux actifs
+    networks = get_all_local_ips()
+    
+    if not networks:
+        print("[Réseau] Aucune IP locale trouvée. Pas de QR code.")
+        return
+
+    # CAS 1 : Une seule IP disponible (ton PC de dev, ou la Pi en mode solo)
+    if len(networks) == 1:
+        ifname, ip = networks[0]
+        url = f"{protocol}://{ip}:{port}"
+        print(f"[Réseau] Mode IP unique détecté ({ifname} : {ip}). Duplication du QR code pour compatibilité.")
+        create_qr_if_changed(url, CONFIG["QR_CODE_WIFI_FILE"])
+        create_qr_if_changed(url, CONFIG["QR_CODE_LAN_FILE"])
+        return
+
+    # CAS 2 : Multi-réseau (Ta Raspberry Pi avec wlan0 + eth0 actifs)
+    for ifname, ip in networks:
+        url = f"{protocol}://{ip}:{port}"
+        # Cible le Wi-Fi (wlan, wl, ou le point d'accès)
+        if "wlan" in ifname or "wl" in ifname:
+            create_qr_if_changed(url, CONFIG["QR_CODE_WIFI_FILE"])
+        # Cible le filaire (eth, enp, ext)
+        else:
+            create_qr_if_changed(url, CONFIG["QR_CODE_LAN_FILE"])
 
 def save_last_track_dir(name):
     """Écrit sur la SD UNIQUEMENT si la valeur a changé pour préserver la carte"""
@@ -171,6 +288,10 @@ def pupitre():
 def admin(): 
     return send_from_directory(WEB_DIR, 'admin.html')
 
+@app.route('/qrcode')
+def qrcode(): 
+    return send_from_directory(WEB_DIR, 'qrcode.html')
+
 @app.route('/training')
 def training(): 
     return send_from_directory(WEB_DIR, 'training.html')
@@ -267,8 +388,6 @@ def serve_scores(filename):
 @app.route('/api/admin/refresh', methods=['POST'])
 def admin_refresh():
     try:
-        # Exécute le script python et attend qu'il se termine
-        # 'check=True' lève une exception si le script renvoie un code d'erreur (non-zéro)
         result = subprocess.run(['python3', 'tools/updateDatabase.py'], 
                                 capture_output=True, 
                                 text=True, 
@@ -281,10 +400,110 @@ def admin_refresh():
         print("Erreur lors de l'exécution du script Python:", e.stderr)
         return jsonify({"success": False, "message": "Erreur lors du scan du disque."}), 500
 
+@app.route('/api/admin/crud', methods=['POST'])
+def admin_crud():
+    data = request.json
+    if not data or 'action' not in data or 'location' not in data:
+        return jsonify({"status": "error", "message": "Paramètres manquants."}), 400
+
+    action = data['action']
+    location = data['location'].strip('/')
+    target_path = os.path.join(DB_DIR, location)
+
+    # Fonction interne pour formater en CamelCase robuste
+    def to_camel_case(s):
+        import re
+        s = s.translate(str.maketrans("ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝàáâãäåæçèéêëìíîïðñòóôõöøùúûüýÿ", 
+                                      "AAAAAAECEEEEIIIIDNOOOOOOUUUUYaaaaaaaeceeeeiiiidnoooooouuuuyy"))
+        words = re.findall(r'[a-zA-Z0-9]+', s)
+        if not words: return ""
+        return words[0].lower() + "".join(w.capitalize() for w in words[1:])
+
+    # --- 1. ACTION : CREATE ---
+    if action == 'create':
+        title = data.get('title')
+        if not title:
+            return jsonify({"status": "error", "message": "Titre propre manquant."}), 400
+        try:
+            os.makedirs(target_path, exist_ok=True)
+            
+            # Création du fichier trackname.txt encodé en UTF-8
+            trackname_file = os.path.join(target_path, 'trackname.txt')
+            with open(trackname_file, 'w', encoding='utf-8') as f:
+                f.write(title)
+                
+            return jsonify({"status": "success", "message": "Dossier et fichier trackname créés."}), 200
+        except Exception as e:
+            return jsonify({"status": "error", "message": str(e)}), 500
+
+    # --- 2. ACTION : UPDATE ---
+    elif action == 'update':
+        if 'new_location' in data:
+            # Cas A : Déplacement complet d'un dossier ou fichier
+            new_location = data['new_location'].strip('/')
+            destination_path = os.path.join(DB_DIR, new_location)
+            
+            if not os.path.exists(target_path):
+                return jsonify({"status": "error", "message": "L'élément source n'existe pas."}), 400
+                
+            try:
+                os.makedirs(os.path.dirname(destination_path), exist_ok=True)
+                shutil.move(target_path, destination_path)
+                return jsonify({"status": "success", "message": "Élément déplacé avec succès."}), 200
+            except Exception as e:
+                return jsonify({"status": "error", "message": str(e)}), 500
+                
+        elif 'new_title' in data:
+            # Cas B : Changement de titre réel -> Renommage dossier + réécriture trackname.txt
+            new_title = data['new_title']
+            if not os.path.exists(target_path):
+                return jsonify({"status": "error", "message": "Le dossier ciblé n'existe pas."}), 400
+                
+            try:
+                parent_dir = os.path.dirname(target_path)
+                clean_new_name = to_camel_case(new_title)
+                destination_path = os.path.join(parent_dir, clean_new_name)
+                
+                # Si le nom du dossier change, on déplace/renomme
+                if target_path != destination_path:
+                    shutil.move(target_path, destination_path)
+                    
+                # On écrit le nouveau titre propre dans le trackname.txt du dossier (nouveau ou existant)
+                trackname_file = os.path.join(destination_path, 'trackname.txt')
+                with open(trackname_file, 'w', encoding='utf-8') as f:
+                    f.write(new_title)
+                    
+                return jsonify({"status": "success", "message": "Titre et dossier mis à jour."}), 200
+            except Exception as e:
+                return jsonify({"status": "error", "message": str(e)}), 500
+        else:
+            return jsonify({"status": "error", "message": "Sous-action update non reconnue."}), 400
+
+    # --- 3. ACTION : DELETE ---
+    elif action == 'delete':
+        if not os.path.exists(target_path):
+            return jsonify({"status": "error", "message": "L'élément à supprimer n'existe pas."}), 400
+            
+        try:
+            if os.path.isdir(target_path):
+                shutil.rmtree(target_path)
+            else:
+                os.remove(target_path)
+            return jsonify({"status": "success", "message": "Supprimé avec succès."}), 200
+        except Exception as e:
+            return jsonify({"status": "error", "message": str(e)}), 500
+
+    else:
+        return jsonify({"status": "error", "message": f"Action '{action}' inconnue."}), 400
+
+
 if __name__ == '__main__':
     host = CONFIG.get("SERVER_HOST", "0.0.0.0")
     port = CONFIG.get("PORT", 8000)
     debug = CONFIG.get("DEBUG_MODE", False)
+    
+    # Détection intelligente corrigée
+    generate_qr_codes()
     
     print(f"Démarrage du serveur Back'n Score (Hôte: {host}:{port})")
     app.run(host=host, port=port, debug=debug)

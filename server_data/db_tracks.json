@@ -720,6 +720,10 @@
         "location": "_vrac/test/santaMorena"
     },
     {
+        "title": "What's the fuck?",
+        "location": "_vrac/test/whatSTheFuck"
+    },
+    {
         "title": "After you've gone",
         "location": "aebersold/123_djangoReinhardtGypsyJazz/afterYouVeGone"
     },
@@ -1342,6 +1346,18 @@
     {
         "title": "les 7 fantastiques",
         "location": "bands/barrBrassBand/les7Fantastiques"
+    },
+    {
+        "title": "Ces petits riens",
+        "location": "bands/jazzDeLIll/cesPetitsRiens"
+    },
+    {
+        "title": "La saison des pluies",
+        "location": "bands/jazzDeLIll/laSaisonDesPluies"
+    },
+    {
+        "title": "Mornin'",
+        "location": "bands/jazzDeLIll/mornin"
     },
     {
         "title": "A swinging safari",
@@ -6758,6 +6774,10 @@
     {
         "title": "Duo des fleurs",
         "location": "styles/classic/duoDesFleurs"
+    },
+    {
+        "title": "Fraise Tagada!",
+        "location": "styles/classic/fraiseTagada"
     },
     {
         "title": "Gnossienne Un",

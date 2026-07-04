@@ -13,6 +13,7 @@
             --text-color: #eeeeee;
             --move-color: #9c27b0;
             --danger-color: #b00020;
+            --selected-bg: #2a3a40;
         }
 
         body {
@@ -48,6 +49,7 @@
         }
         .btn-move { background-color: var(--move-color); }
         .btn-danger { background-color: var(--danger-color); }
+        .btn-secondary { background-color: var(--accent-color); color: var(--text-color); }
         .btn:disabled { background-color: #555; cursor: not-allowed; }
 
         /* Groupe Input + Bouton d'exploration */
@@ -152,8 +154,15 @@
             font-size: 0.95rem;
         }
         .modal-body ul { list-style-type: none; padding-left: 15px; margin: 0; }
-        .modal-body li { margin: 8px 0; }
+        .modal-body li { margin: 6px 0; position: relative; }
         
+        /* Conteneur de ligne pour aligner proprement la flèche et la zone sélectionnable */
+        .tree-row {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+        }
+
         .selectable-path { 
             cursor: pointer; 
             padding: 4px 8px; 
@@ -161,8 +170,59 @@
             display: inline-block;
         }
         .selectable-path:hover { background-color: var(--accent-color); }
+        
+        /* Style pour l'élément actuellement sélectionné dans la modale */
+        .selectable-path.active-selection {
+            background-color: var(--selected-bg) !important;
+            outline: 1px solid var(--primary-color);
+        }
+
         .folder-node { color: #ffb400; font-weight: bold; }
         .track-node { color: #ffffff; }
+
+        /* Flèche d'état pour les dossiers rétractables */
+        .folder-toggle {
+            cursor: pointer;
+            font-size: 0.75rem;
+            display: inline-block;
+            width: 20px;
+            height: 24px;
+            line-height: 24px;
+            text-align: center;
+            color: #888;
+            transition: transform 0.2s;
+            user-select: none;
+        }
+        .folder-toggle:hover { color: white; }
+        
+        /* Espaceur pour aligner les morceaux (qui n'ont pas de flèche) avec les dossiers */
+        .track-spacer {
+            display: inline-block;
+            width: 20px;
+        }
+
+        /* Gestion CSS de l'ouverture/fermeture des branches */
+        .folder-branch > ul {
+            display: none;
+        }
+        .folder-branch.expanded > ul {
+            display: block;
+        }
+        .folder-branch.expanded > .tree-row > .folder-toggle {
+            transform: rotate(90deg);
+        }
+
+        /* Pied de la modale contenant les boutons de validation */
+        .modal-footer {
+            padding: 10px;
+            border-top: 1px solid var(--accent-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            background-color: #151515;
+            border-bottom-left-radius: 6px;
+            border-bottom-right-radius: 6px;
+        }
     </style>
 </head>
 <body>
@@ -207,7 +267,7 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>Nouvel Emplacement cible (Destination)</label>
+                    <label>Nouvel Emplacement cible (Dossier Parent de destination)</label>
                     <div class="input-browse-group">
                         <input type="text" id="move-new-location" placeholder="Sélectionnez la destination...">
                         <button class="btn-browse" onclick="openTreeModal('move-new-location', true)">📁</button>
@@ -255,7 +315,7 @@
 
     </main>
 
-    <div id="tree-modal" class="modal-overlay" onclick="closeTreeModal(event)">
+    <div id="tree-modal" class="modal-overlay" onclick="hideModal()">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="modal-header">
                 <h3 id="modal-title-text">Explorateur de Bibliothèque</h3>
@@ -263,6 +323,10 @@
             </div>
             <div id="modal-tree-body" class="modal-body">
                 <p style="color: #888; margin: 0;">Chargement...</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="hideModal()">Annuler (ESC)</button>
+                <button id="modal-btn-confirm" class="btn" onclick="confirmModalSelection()">Sélectionner (OK)</button>
             </div>
         </div>
     </div>
@@ -275,6 +339,8 @@
         var activeTargetInputId = null;
         var foldersOnlyMode = false;
         var cachedRawData = null;
+        
+        var currentPendingSelection = null; 
 
         function makeRequest(method, url, dataToSend, callback) {
             var xhr = new XMLHttpRequest();
@@ -329,6 +395,13 @@
             return root.children;
         }
 
+        function clearVisualSelection() {
+            var selectedElements = document.querySelectorAll('.active-selection');
+            for (var i = 0; i < selectedElements.length; i++) {
+                selectedElements[i].classList.remove('active-selection');
+            }
+        }
+
         function renderTreeDOM(nodes) {
             var ul = document.createElement('ul');
             for (var i = 0; i < nodes.length; i++) {
@@ -336,7 +409,41 @@
                 
                 if (item.type === 'folder') {
                     var li = document.createElement('li');
-                    li.innerHTML = '<span class="selectable-path folder-node" onclick="selectPathFromTree(\'' + item.path + '\', true)">📁 ' + item.name + '</span>';
+                    li.className = "folder-branch";
+                    
+                    // Conteneur de ligne pour isoler la flèche du bouton cliquable
+                    var rowDiv = document.createElement('div');
+                    rowDiv.className = "tree-row";
+                    
+                    var toggleSpan = document.createElement('span');
+                    toggleSpan.className = "folder-toggle";
+                    toggleSpan.innerHTML = "▶";
+                    
+                    // Clic sur la flèche : ouvre/ferme sans impacter la sélection
+                    toggleSpan.onclick = (function(targetLi) {
+                        return function(e) {
+                            targetLi.classList.toggle('expanded');
+                        };
+                    })(li);
+
+                    rowDiv.appendChild(toggleSpan);
+                    
+                    // Zone cliquable pour la sélection du dossier (flèche exclue)
+                    var folderSpan = document.createElement('span');
+                    folderSpan.className = "selectable-path folder-node";
+                    folderSpan.innerHTML = "📁 " + item.name;
+                    
+                    folderSpan.onclick = (function(spanEl, path) {
+                        return function(e) {
+                            clearVisualSelection();
+                            spanEl.classList.add('active-selection');
+                            currentPendingSelection = path;
+                        };
+                    })(folderSpan, item.path);
+
+                    rowDiv.appendChild(folderSpan);
+                    li.appendChild(rowDiv);
+
                     if (item.children && item.children.length > 0) {
                         li.appendChild(renderTreeDOM(item.children));
                     }
@@ -344,7 +451,29 @@
                 } else {
                     if (!foldersOnlyMode) {
                         var li = document.createElement('li');
-                        li.innerHTML = '<span class="selectable-path track-node" onclick="selectPathFromTree(\'' + item.path + '\', false)">🎵 ' + item.title + '</span>';
+                        
+                        var rowDiv = document.createElement('div');
+                        rowDiv.className = "tree-row";
+                        
+                        // Un espaceur pour aligner le morceau avec le texte des dossiers
+                        var spacer = document.createElement('span');
+                        spacer.className = "track-spacer";
+                        rowDiv.appendChild(spacer);
+                        
+                        var trackSpan = document.createElement('span');
+                        trackSpan.className = "selectable-path track-node";
+                        trackSpan.innerHTML = "🎵 " + item.title;
+                        
+                        trackSpan.onclick = (function(spanEl, path) {
+                            return function(e) {
+                                clearVisualSelection();
+                                spanEl.classList.add('active-selection');
+                                currentPendingSelection = path;
+                            };
+                        })(trackSpan, item.path);
+
+                        rowDiv.appendChild(trackSpan);
+                        li.appendChild(rowDiv);
                         ul.appendChild(li);
                     }
                 }
@@ -355,6 +484,7 @@
         function openTreeModal(targetInputId, foldersOnly) {
             activeTargetInputId = targetInputId;
             foldersOnlyMode = foldersOnly;
+            currentPendingSelection = null; 
             
             var modal = document.getElementById('tree-modal');
             var titleText = document.getElementById('modal-title-text');
@@ -373,8 +503,13 @@
             document.getElementById('tree-modal').style.display = "none";
         }
 
-        function closeTreeModal(event) {
-            hideModal();
+        function confirmModalSelection() {
+            if (currentPendingSelection !== null && activeTargetInputId) {
+                document.getElementById(activeTargetInputId).value = currentPendingSelection;
+                hideModal();
+            } else {
+                alert("Veuillez d'abord sélectionner un élément dans l'arbre.");
+            }
         }
 
         function fetchAndRenderTree() {
@@ -398,20 +533,12 @@
             bodyContainer.appendChild(renderTreeDOM(treeStructure));
         }
 
-        function selectPathFromTree(path, isFolder) {
-            if (activeTargetInputId) {
-                document.getElementById(activeTargetInputId).value = path;
-            }
-            hideModal();
-        }
-
         function triggerRefresh() {
             var btn = document.getElementById('btn-refresh');
             btn.disabled = true; btn.innerHTML = "⏳ Indexation...";
             makeRequest('POST', API_REFRESH_URL, {}, function (err, data) {
-                if (!err) { 
-                    alert("Base rafraîchie !"); 
-                    cachedRawData = null;
+                if (!err) {
+                    alert("Indexation terminée avec succès !");
                 } else {
                     alert("Erreur lors de l'indexation.");
                 }
@@ -419,11 +546,8 @@
             });
         }
 
-        // Convertisseur CamelCase robuste compatible ES5 (sans .normalize)
         function convertToCamelCase(str) {
             if (!str) return "";
-            
-            // Étape 1 : Remplacement manuel des accents courants en ES5
             var accents = "ÀÁÂÃÄÅ📂🎒ÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿ";
             var sansAccents = "AAAAAAAECEEEEIIIIDNOOOOOOUUUUYbBaaaaaaaeceeeeiiiidnoooooouuuuyby";
             var cleanStr = "";
@@ -437,25 +561,21 @@
                 }
             }
 
-            // Étape 2 : Découpage par tout ce qui n'est pas alphanumérique (espaces, apostrophes, tirets...)
             var words = cleanStr.split(/[^a-zA-Z0-9]/);
             var camelCaseResult = "";
             var isFirstWordFound = false;
 
             for (var j = 0; j < words.length; j++) {
                 var word = words[j];
-                if (word.length === 0) continue; // Ignore les blocs vides créés par des espaces multiples
+                if (word.length === 0) continue;
 
                 if (!isFirstWordFound) {
-                    // Premier mot : Tout en minuscules
                     camelCaseResult += word.toLowerCase();
                     isFirstWordFound = true;
                 } else {
-                    // Mots suivants : Première lettre en Majuscule, le reste en minuscules (ex: nÖEL -> Noel)
                     camelCaseResult += word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
                 }
             }
-
             return camelCaseResult;
         }
 
@@ -464,7 +584,6 @@
             var title = document.getElementById('create-title').value;
             if (!loc || !title) { alert("Champs manquants."); return; }
             
-            // Transformation impeccable en CamelCase
             var cleanDirName = convertToCamelCase(title);
             var fullLocation = loc + '/' + cleanDirName;
 
@@ -472,20 +591,38 @@
             alert("DEBUG - Requête [CREATE] prête :\n" + JSON.stringify(params, null, 4));
 
             makeRequest('POST', API_CRUD_URL, params, function(err, res) {
-                if (!err && res.status === "success") { alert("Créé !"); cachedRawData = null; } else alert("Erreur.");
+                if (!err && res.status === "success") { 
+                    alert("Succès serveur : Morceau créé !");
+                    document.getElementById('create-title').value = "";
+                    document.getElementById('create-location').value = "";
+                    cachedRawData = null;
+                } else {
+                    alert("Erreur serveur lors de la création.");
+                }
             });
         }
 
         function actionMove() {
             var loc = document.getElementById('move-location').value;
-            var newLoc = document.getElementById('move-new-location').value;
-            if (!loc || !newLoc) { alert("Champs manquants."); return; }
+            var newParentLoc = document.getElementById('move-new-location').value;
+            if (!loc || !newParentLoc) { alert("Champs manquants."); return; }
 
-            var params = { action: 'update', location: loc, new_location: newLoc };
+            var parts = loc.split('/');
+            var elementName = parts[parts.length - 1];
+            var fullDestination = newParentLoc + '/' + elementName;
+
+            var params = { action: 'update', location: loc, new_location: fullDestination };
             alert("DEBUG - Requête [MOVE] prête :\n" + JSON.stringify(params, null, 4));
 
             makeRequest('POST', API_CRUD_URL, params, function(err, res) {
-                if (!err && res.status === "success") { alert("Déplacé !"); cachedRawData = null; } else alert("Erreur.");
+                if (!err && res.status === "success") { 
+                    alert("Succès serveur : Élément déplacé !");
+                    document.getElementById('move-location').value = "";
+                    document.getElementById('move-new-location').value = "";
+                    cachedRawData = null;
+                } else {
+                    alert("Erreur serveur lors du déplacement.");
+                }
             });
         }
 
@@ -498,7 +635,14 @@
             alert("DEBUG - Requête [UPDATE TITLE] prête :\n" + JSON.stringify(params, null, 4));
 
             makeRequest('POST', API_CRUD_URL, params, function(err, res) {
-                if (!err && res.status === "success") { alert("Titre mis à jour !"); cachedRawData = null; } else alert("Erreur.");
+                if (!err && res.status === "success") { 
+                    alert("Succès serveur : Titre et dossier mis à jour !");
+                    document.getElementById('update-title').value = "";
+                    document.getElementById('update-location').value = "";
+                    cachedRawData = null;
+                } else {
+                    alert("Erreur serveur lors de la mise à jour du titre.");
+                }
             });
         }
 
@@ -511,7 +655,13 @@
 
             if (confirm("Supprimer définitivement :\n" + loc + " ?")) {
                 makeRequest('POST', API_CRUD_URL, params, function(err, res) {
-                    if (!err && res.status === "success") { alert("Supprimé !"); cachedRawData = null; } else alert("Erreur.");
+                    if (!err && res.status === "success") { 
+                        alert("Succès serveur : Élément supprimé !");
+                        document.getElementById('delete-location').value = "";
+                        cachedRawData = null;
+                    } else {
+                        alert("Erreur serveur lors de la suppression.");
+                    }
                 });
             }
         }

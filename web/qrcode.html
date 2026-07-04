@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Back'n Score — Connexion Réseau</title>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1e2f 100%);
+            --card-bg: #24243a;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-wifi: #38bdf8;
+            --accent-lan: #4ade80;
+            --border-radius: 16px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        /* En-tête typé application de musique */
+        .brand {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .brand h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -0.05em;
+            margin: 0 0 8px 0;
+            background: linear-gradient(to right, #ffffff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand h1 span {
+            background: linear-gradient(to right, var(--accent-wifi), #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand p {
+            color: var(--text-muted);
+            font-size: 1rem;
+            margin: 0;
+            max-width: 460px;
+            line-height: 1.5;
+        }
+
+        /* Grille des cartes */
+        .qr-container {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+            max-width: 760px;
+        }
+
+        /* Cartes au look "Studio / Matériel" */
+        .qr-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            padding: 30px 24px;
+            text-align: center;
+            flex: 1;
+            min-width: 280px;
+            max-width: 340px;
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Effets de focus subtils selon le type */
+        .qr-card.wifi-card:hover {
+            border-color: rgba(56, 189, 248, 0.3);
+            box-shadow: 0 10px 30px rgba(56, 189, 248, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .qr-card.lan-card:hover {
+            border-color: rgba(74, 222, 128, 0.3);
+            box-shadow: 0 10px 30px rgba(74, 222, 128, 0.1);
+            transform: translateY(-2px);
+        }
+
+        /* Badges techniques */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+        
+        .wifi-card .badge {
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--accent-wifi);
+        }
+        
+        .lan-card .badge {
+            background: rgba(74, 222, 128, 0.1);
+            color: var(--accent-lan);
+        }
+
+        .qr-card h2 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin: 0 0 20px 0;
+        }
+
+        /* Conteneur d'image pour faire ressortir le QR Code blanc sur fond sombre */
+        .qr-wrapper {
+            background: #ffffff;
+            padding: 16px;
+            border-radius: 12px;
+            display: inline-block;
+            margin-bottom: 20px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .qr-card img {
+            width: 180px;
+            height: 180px;
+            display: block;
+        }
+
+        .qr-card p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+            margin: 0;
+            padding: 0 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="brand">
+        <h1>Back'n <span>Score</span></h1>
+        <p>Sélectionnez votre mode d'accès pour charger le pupitre et synchroniser vos partitions.</p>
+    </div>
+
+    <div class="qr-container">
+        
+        <div class="qr-card wifi-card">
+            <span class="badge">Wireless AP</span>
+            <h2>Réseau Wi-Fi</h2>
+            <div class="qr-wrapper">
+                <img src="/static/qrcode_wifi.png" alt="QR Code Connexion Wi-Fi">
+            </div>
+            <p>Idéal en mobilité. Connectez votre tablette directement sur le point d'accès Wi-Fi de la borne.</p>
+        </div>
+
+        <div class="qr-card lan-card">
+            <span class="badge">Ethernet LAN</span>
+            <h2>Réseau Filaire</h2>
+            <div class="qr-wrapper">
+                <img src="/static/qrcode_lan.png" alt="QR Code Connexion Filaire">
+            </div>
+            <p>Idéal pour le développement ou les répétitions maison. Passe par le routeur de votre box locale.</p>
+        </div>
+
+    </div>
+
+</body>
+</html>
