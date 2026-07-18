@@ -410,7 +410,7 @@ def admin_crud():
     location = data['location'].strip('/')
     target_path = os.path.join(DB_DIR, location)
 
-    # Fonction interne pour formater en CamelCase robuste
+    # Fonction interne pour formater en CamelCase robuste pour les dossiers physiques
     def to_camel_case(s):
         import re
         s = s.translate(str.maketrans("ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝàáâãäåæçèéêëìíîïðñòóôõöøùúûüýÿ", 
@@ -439,45 +439,42 @@ def admin_crud():
     # --- 2. ACTION : UPDATE ---
     elif action == 'update':
         if 'new_location' in data:
-            # Cas A : Déplacement complet d'un dossier ou fichier
+            # Cas A : Renommer ou déplacer physiquement n'importe quel dossier (étagère, livre ou dossier track)
             new_location = data['new_location'].strip('/')
             destination_path = os.path.join(DB_DIR, new_location)
             
             if not os.path.exists(target_path):
-                return jsonify({"status": "error", "message": "L'élément source n'existe pas."}), 400
+                return jsonify({"status": "error", "message": f"Le dossier d'origine n'existe pas ({location})."}), 400
                 
             try:
                 os.makedirs(os.path.dirname(destination_path), exist_ok=True)
-                shutil.move(target_path, destination_path)
-                return jsonify({"status": "success", "message": "Élément déplacé avec succès."}), 200
+                if os.path.normpath(target_path) != os.path.normpath(destination_path):
+                    shutil.move(target_path, destination_path)
+                return jsonify({"status": "success", "message": "Dossier renommé/déplacé sur le disque avec succès.", "new_location": new_location}), 200
             except Exception as e:
                 return jsonify({"status": "error", "message": str(e)}), 500
                 
         elif 'new_title' in data:
-            # Cas B : Changement de titre réel -> Renommage dossier + réécriture trackname.txt
+            # Cas B : Modifier UNIQUEMENT le contenu textuel de trackname.txt (Le titre affiché de la chanson)
             new_title = data['new_title']
             if not os.path.exists(target_path):
-                return jsonify({"status": "error", "message": "Le dossier ciblé n'existe pas."}), 400
+                return jsonify({"status": "error", "message": f"Le dossier ciblé n'existe pas ({location})."}), 400
                 
             try:
-                parent_dir = os.path.dirname(target_path)
-                clean_new_name = to_camel_case(new_title)
-                destination_path = os.path.join(parent_dir, clean_new_name)
-                
-                # Si le nom du dossier change, on déplace/renomme
-                if target_path != destination_path:
-                    shutil.move(target_path, destination_path)
-                    
-                # On écrit le nouveau titre propre dans le trackname.txt du dossier (nouveau ou existant)
-                trackname_file = os.path.join(destination_path, 'trackname.txt')
+                trackname_file = os.path.join(target_path, 'trackname.txt')
                 with open(trackname_file, 'w', encoding='utf-8') as f:
                     f.write(new_title)
+                
+                try:
+                    os.sync()
+                except AttributeError:
+                    pass
                     
-                return jsonify({"status": "success", "message": "Titre et dossier mis à jour."}), 200
+                return jsonify({"status": "success", "message": "Fichier trackname.txt mis à jour."}), 200
             except Exception as e:
                 return jsonify({"status": "error", "message": str(e)}), 500
         else:
-            return jsonify({"status": "error", "message": "Sous-action update non reconnue."}), 400
+            return jsonify({"status": "error", "message": "Sous-action update non reconnue (fournir new_location ou new_title)."}), 400
 
     # --- 3. ACTION : DELETE ---
     elif action == 'delete':

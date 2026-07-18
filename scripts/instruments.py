@@ -43,6 +43,7 @@ INSTRUMENTS = {
 "cor_sib": ("SIb", "SOL", "-1", "CUIVRES"),
 "cornet": ("SIb","SOL","0","CUIVRES"),
 "bugle": ("SIb","SOL","0","CUIVRES"),
+"bugle_do": ("DO","SOL","0","CUIVRES"),
 "clairon": ("SIb","SOL","0","CUIVRES"),
 "trompette_de_cavalerie": ("MIb","SOL","0","CUIVRES"),
 "trompette": ("SIb","SOL","0","CUIVRES"),

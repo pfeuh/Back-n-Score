@@ -584,7 +584,8 @@
             var title = document.getElementById('create-title').value;
             if (!loc || !title) { alert("Champs manquants."); return; }
             
-            var cleanDirName = convertToCamelCase(title);
+            // On conserve l'intitulé exact saisi par l'utilisateur
+            var cleanDirName = title.trim();
             var fullLocation = loc + '/' + cleanDirName;
 
             var params = { action: 'create', location: fullLocation, title: title };

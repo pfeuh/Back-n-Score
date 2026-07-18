@@ -1392,8 +1392,16 @@
         "location": "bands/joyeuxVignerons/daumenHoch"
     },
     {
+        "title": "Der Sonne Entgeben",
+        "location": "bands/joyeuxVignerons/derSonneEntgegen"
+    },
+    {
         "title": "Du, nur du",
         "location": "bands/joyeuxVignerons/duNurDu"
+    },
+    {
+        "title": "Fast Himmelblau",
+        "location": "bands/joyeuxVignerons/fastHimmelblau"
     },
     {
         "title": "Fegerländer Musikant",
@@ -1412,8 +1420,16 @@
         "location": "bands/joyeuxVignerons/grandfatherSClock"
     },
     {
+        "title": "Hammer un Glas Polka",
+        "location": "bands/joyeuxVignerons/hammerUnGlasPolka"
+    },
+    {
         "title": "Immer wieder Blasmusik",
         "location": "bands/joyeuxVignerons/immerWiederBlasmusik"
+    },
+    {
+        "title": "Julia",
+        "location": "bands/joyeuxVignerons/Julia"
     },
     {
         "title": "Klarifari",
@@ -1430,6 +1446,10 @@
     {
         "title": "Musik ist Trumpf",
         "location": "bands/joyeuxVignerons/musikIstTrumpf"
+    },
+    {
+        "title": "My dream",
+        "location": "bands/joyeuxVignerons/myDream"
     },
     {
         "title": "Pirates of the caribbean medley",
@@ -1474,6 +1494,10 @@
     {
         "title": "Weinkeller Polka",
         "location": "bands/joyeuxVignerons/weinkellerPolka"
+    },
+    {
+        "title": "What a wonderful world",
+        "location": "bands/joyeuxVignerons/whatAWonderfulWorld"
     },
     {
         "title": "Wir Musikanten",
@@ -1562,6 +1586,10 @@
     {
         "title": "A l'ancienne",
         "location": "bands/pierreFaller/aLAncienne"
+    },
+    {
+        "title": "A la Bireli",
+        "location": "bands/pierreFaller/aLaBireli"
     },
     {
         "title": "A la charrue",
@@ -2186,10 +2214,6 @@
     {
         "title": "You have changed my mind",
         "location": "bands/pierreFaller/youHaveChangedMyMind"
-    },
-    {
-        "title": "à la Bireli",
-        "location": "bands/pierreFaller/aLaBireli"
     },
     {
         "title": "About a girl",
@@ -7208,6 +7232,10 @@
         "location": "styles/jazz/inTheJailhouseNow"
     },
     {
+        "title": "In walked Bud",
+        "location": "styles/jazz/inWalkedBud"
+    },
+    {
         "title": "Is you is or is you ain't my baby",
         "location": "styles/jazz/isYouIsOrIsYouAinTMyBaby"
     },
@@ -7530,14 +7558,6 @@
     {
         "title": "Sophisticated lady",
         "location": "styles/jazz/sophisticatedLady"
-    },
-    {
-        "title": "Spain",
-        "location": "styles/jazz/spain"
-    },
-    {
-        "title": "Spain (en Sib)",
-        "location": "styles/jazz/spainEnSib"
     },
     {
         "title": "Speak no evil",
@@ -7984,12 +8004,24 @@
         "location": "styles/latin/siboney"
     },
     {
+        "title": "Sofrito",
+        "location": "styles/latin/sofrito"
+    },
+    {
         "title": "Song for my father",
         "location": "styles/latin/songForMyFather"
     },
     {
         "title": "Soul bossa nova",
         "location": "styles/latin/soulBossaNova"
+    },
+    {
+        "title": "Spain",
+        "location": "styles/latin/spain"
+    },
+    {
+        "title": "Spain (en Sib)",
+        "location": "styles/latin/spainEnSib"
     },
     {
         "title": "Spanish go round",
