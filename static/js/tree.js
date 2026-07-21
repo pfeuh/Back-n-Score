@@ -1,22 +1,12 @@
+// Variables globales pour mémoriser l'état d'ouverture de l'accordéon strict
+var activeOpenedCategory = null;
+var activeOpenedTonalite = null;
+
+// Ordre personnalisé selon le cycle des quartes pour le tri des sous-catégories (tonalités)
+var QUARTES_ORDER = ["DO", "FA", "SIb", "MIb", "LAb", "REb", "FA#", "SOLb", "SI", "MI", "LA", "RE", "SOL"];
+
 function uiSelectInstrument() {
-    var fullPath = last_inst_path.get() || "";
-    var currentModeName = (instru_select_mode.get() == MODE_POPULAR) ? "POPULAR" : "CLASSIQUE";
-
-    if (fullPath.indexOf(currentModeName) !== 0) {
-        fullPath = "";
-    }
-
-    var displayPath = "";
-    if (fullPath !== "") {
-        var parts = fullPath.split("/");
-        parts.shift(); 
-        displayPath = parts.join("/");
-    }
-
-    var lastSlash = displayPath.lastIndexOf("/");
-    var folderPath = (lastSlash !== -1) ? displayPath.substring(0, lastSlash) : displayPath;
-    
-    loadView('instruments', folderPath);
+    loadView('instruments', "");
 }
 
 function uiSelectTrack() {
@@ -31,8 +21,7 @@ function uiSelectTrack() {
     loadView('tracks', folderPath);
 }
 
-function prepareTreeInterface() {
-    // CORRECTION : On ne ferme plus le menu principal, on le laisse apparent derrière.
+function prepareTreeInterface(viewType) {
     var popupContent = document.getElementById('tree-popup-content');
     popupContent.innerHTML = ""; 
 
@@ -41,42 +30,43 @@ function prepareTreeInterface() {
     var treeOverlay = document.getElementById('tree-popup-overlay');
     if (treeOverlay) treeOverlay.style.display = 'block';
 
-    var navHost = document.createElement('div');
-    navHost.id = "breadcrumb";
-    navHost.style.position = "absolute";
-    navHost.style.top = "0";
-    navHost.style.left = "0";
-    navHost.style.right = "0";
-    navHost.style.height = "50px";
-    navHost.style.background = "#333";
-    navHost.style.zIndex = "10";
-    popupContent.appendChild(navHost);
+    // Bouton de fermeture global ✕ en haut à droite de la popup
+    var closeBtn = document.createElement("div"); 
+    closeBtn.className = "btn-cancel";
+    closeBtn.innerText = "✕";
+    closeBtn.style.position = "absolute";
+    closeBtn.style.top = "10px";
+    closeBtn.style.right = "10px";
+    closeBtn.style.zIndex = "100";
+    closeBtn.onclick = closeTreeView; 
+    popupContent.appendChild(closeBtn);
 
+    // Conteneur principal unique de l'arbre
     var treeHost = document.createElement('div');
     treeHost.id = "tree-container";
     treeHost.style.position = "absolute";
-    treeHost.style.top = "50px"; 
+    treeHost.style.top = "50px"; /* Laisse de l'espace pour le bouton fermer */
     treeHost.style.bottom = "0"; 
     treeHost.style.left = "0";
     treeHost.style.right = "0";
-    
     treeHost.style.overflowY = "scroll"; 
     treeHost.style.webkitOverflowScrolling = "touch";
     
     popupContent.appendChild(treeHost);
 }
 
-function addTreeRow(text, onClick, isSelected, container) {
+function addTreeRow(text, onClick, isSelected, container, paddingLeft) {
     var div = document.createElement("div");
     div.className = "item-row";
     div.style.display = "block";
     div.style.width = "100%";
-    div.style.padding = "15px 10px"; 
-    div.style.borderBottom = "1px solid #444";
+    div.style.padding = "12px 15px"; 
+    if (paddingLeft) {
+        div.style.paddingLeft = paddingLeft + "px";
+    }
+    div.style.borderBottom = "1px solid #333";
     div.style.boxSizing = "border-box"; 
     div.style.cursor = "pointer";
-    
-    // CORRECTION : Couleur du texte forcée en blanc/clair pour ne pas être moche/invisible sur fond noir
     div.style.color = "#FFFFFF";
     div.style.fontSize = "16px";
     
@@ -94,98 +84,209 @@ function addTreeRow(text, onClick, isSelected, container) {
 
     div.onclick = onClick;
     container.appendChild(div);
+    return div;
 }
 
 function loadView(viewType, path) {
     stopPooling();
-    prepareTreeInterface(); 
+    prepareTreeInterface(viewType); 
     
-    var container = document.getElementById('breadcrumb');
     var treeDiv = document.getElementById('tree-container');
-
-    renderNavigation(viewType, path, container);
     
     if (viewType === 'tracks') {
         renderTrackTree(DATA_TRACKS, path, treeDiv);
     } else {
-        renderInstrumentTree(path, treeDiv);
+        renderTrueInstrumentTree(treeDiv);
     }
 }
 
-function renderNavigation(view, path, container) {
-    container.innerHTML = ""; 
-    container.style.display = "block";
-    container.style.width = "100%";
-    container.style.height = "50px";
-    container.style.overflow = "hidden";
-
-    var rightCell = document.createElement("div");
-    rightCell.style.float = "right";
-    rightCell.style.width = "50px";
-    rightCell.style.lineHeight = "50px";
-    rightCell.style.textAlign = "center";
+function renderTrueInstrumentTree(container) {
+    container.innerHTML = "";
     
-    var cancelBtn = document.createElement("div"); 
-    cancelBtn.className = "btn-cancel";
-    cancelBtn.innerText = "✖";
-    cancelBtn.onclick = closeTreeView; 
-    rightCell.appendChild(cancelBtn);
+    var modeName = (instru_select_mode.get() == MODE_POPULAR) ? "POPULAR" : "CLASSIQUE";
+    var data = (modeName === "POPULAR") ? DATA_UI_POPULAR : DATA_UI_CLASSIQUE;
+    var selectedInstrument = current_instrument.get();
 
-    var leftCell = document.createElement("div");
-    leftCell.style.overflowX = "auto"; 
-    leftCell.style.whiteSpace = "nowrap"; 
-    leftCell.style.lineHeight = "50px";
+    // Tableaux pour stocker les fonctions de fermeture afin de gérer l'accordéon strict à la volée
+    var closeAllCategories = [];
+    var closeAllTonalites = [];
 
-    container.appendChild(rightCell); 
-    container.appendChild(leftCell);  
+    // --- Ajout manuel de la catégorie CHEF avec "conducteur" en minuscules ---
+    var fullData = {};
+    fullData["CHEF"] = ["conducteur", "tutti"];
+    for (var k in data) {
+        if (data.hasOwnProperty(k)) {
+            fullData[k] = data[k];
+        }
+    }
 
-    var rootBtn = document.createElement("div"); 
-    rootBtn.style.display = "inline-block"; 
-    rootBtn.style.padding = "0 5px";
-    rootBtn.style.cursor = "pointer";
-    rootBtn.style.color = "#FFF";
-    rootBtn.innerText = (view === 'tracks' ? "🏠 Biblio" : "🏠 Instr.");
-    rootBtn.onclick = function() { loadView(view, ""); }; 
-    leftCell.appendChild(rootBtn);
+    // Parcourt les catégories principales (CHEF, BOIS, CUIVRES, MELODISTES...)
+    for (var catName in fullData) {
+        if (!fullData.hasOwnProperty(catName)) continue;
 
-    if (path && path !== "") {
-        var parts = [];
-        var splitPath = path.split("/");
-        for (var k = 0; k < splitPath.length; k++) {
-            if (splitPath[k] && splitPath[k].length > 0) {
-                parts.push(splitPath[k]);
+        (function(categoryName, categoryData) {
+            // Création de l'entête de la catégorie
+            var catRow = document.createElement("div");
+            catRow.style.backgroundColor = "#2a2a2a";
+            catRow.style.borderBottom = "2px solid #444";
+            catRow.style.color = "#f1c40f";
+            catRow.style.fontWeight = "bold";
+            catRow.style.padding = "14px 15px";
+            catRow.style.cursor = "pointer";
+            catRow.style.fontSize = "16px";
+            catRow.innerText = "📁 " + categoryName.replace(/_/g, " ");
+            container.appendChild(catRow);
+
+            // Conteneur de la branche (les enfants)
+            var branchDiv = document.createElement("div");
+            branchDiv.style.display = "none"; // Masqué par défaut
+            container.appendChild(branchDiv);
+
+            // Fonctions internes pour ouvrir/fermer cette catégorie spécifique
+            var openMe = function() {
+                branchDiv.style.display = "block";
+                catRow.innerText = "📂 " + categoryName.replace(/_/g, " ");
+                activeOpenedCategory = categoryName;
+            };
+            var closeMe = function() {
+                branchDiv.style.display = "none";
+                catRow.innerText = "📁 " + categoryName.replace(/_/g, " ");
+            };
+
+            closeAllCategories.push(closeMe);
+
+            // Si c'est la catégorie précédemment ouverte, on la garde ouverte au chargement
+            if (activeOpenedCategory === categoryName) {
+                openMe();
             }
-        }
 
-        var cumulativePath = "";
-        for (var i = 0; i < parts.length; i++) {
-            cumulativePath += (i === 0 ? "" : "/") + parts[i];
-            var isLast = (i === parts.length - 1);
-
-            (function(segmentName, targetPath, last) {
-                var sep = document.createElement("span");
-                sep.innerText = " > ";
-                sep.style.color = "#888";
-                leftCell.appendChild(sep);
-
-                var segment = document.createElement("div"); 
-                segment.style.display = "inline-block";
-                segment.style.padding = "0 5px";
-                segment.style.fontSize = "16px";
-                segment.innerText = segmentName.replace(/([A-Z])/g, ' $1').trim();
-
-                if (last) {
-                    segment.style.color = "#f1c40f"; 
-                    segment.style.fontWeight = "bold";
-                    segment.style.cursor = "default";
+            // Gestion du clic pour la catégorie (Accordéon Strict)
+            catRow.onclick = function() {
+                if (branchDiv.style.display === "none") {
+                    // On ferme d'abord toutes les autres catégories principales
+                    for (var c = 0; c < closeAllCategories.length; c++) {
+                        closeAllCategories[c]();
+                    }
+                    openMe();
                 } else {
-                    segment.style.color = "#FFFFFF"; 
-                    segment.style.cursor = "pointer";
-                    segment.onclick = function() { loadView(view, targetPath); };
+                    closeMe();
+                    activeOpenedCategory = null;
                 }
-                leftCell.appendChild(segment);
-            })(parts[i], cumulativePath, isLast);
-        }
+            };
+
+            // Remplissage de la branche
+            if (categoryData instanceof Array) {
+                // Cas standard : Tableau direct d'instruments (ex: CHEF, CUIVRES, VOIX...)
+                for (var i = 0; i < categoryData.length; i++) {
+                    (function(instName) {
+                        var isSelected = (instName === selectedInstrument);
+                        
+                        // Si l'instrument est sélectionné au chargement, on déplie la catégorie
+                        if (isSelected) {
+                            for (var c = 0; c < closeAllCategories.length; c++) {
+                                closeAllCategories[c]();
+                            }
+                            openMe();
+                        }
+
+                        addTreeRow(instName, function() {
+                            last_inst_path.set(modeName + "/" + categoryName + "/" + instName);
+                            current_instrument.set(instName);
+                            closeTreeView();
+                        }, isSelected, branchDiv, 35);
+                    })(categoryData[i]);
+                }
+            } else {
+                // Cas particulier : Imbrication par tonalités (ex: MELODISTES)
+                // Extraction et tri des clés selon la suite des quartes
+                var sortedSubKeys = Object.keys(categoryData).sort(function(a, b) {
+                    var indexA = QUARTES_ORDER.indexOf(a);
+                    var indexB = QUARTES_ORDER.indexOf(b);
+                    if (indexA === -1) indexA = 999;
+                    if (indexB === -1) indexB = 999;
+                    return indexA - indexB;
+                });
+
+                for (var k = 0; k < sortedSubKeys.length; k++) {
+                    var subKey = sortedSubKeys[k];
+                    
+                    (function(tonaliteName, subInstruments) {
+                        // Ligne de la sous-catégorie (Tonalité)
+                        var subRow = document.createElement("div");
+                        subRow.style.backgroundColor = "#1f1f1f";
+                        subRow.style.color = "#FFF";
+                        subRow.style.padding = "10px 10px 10px 30px";
+                        subRow.style.borderBottom = "1px solid #333";
+                        subRow.style.cursor = "pointer";
+                        subRow.style.fontWeight = "500";
+                        subRow.innerText = tonaliteName;
+                        branchDiv.appendChild(subRow);
+
+                        // Conteneur pour les instruments de cette tonalité
+                        var subBranchDiv = document.createElement("div");
+                        subBranchDiv.style.display = "none"; 
+                        branchDiv.appendChild(subBranchDiv);
+
+                        // Fonctions internes pour ouvrir/fermer cette tonalité spécifique
+                        var openSub = function() {
+                            subBranchDiv.style.display = "block";
+                            subRow.style.color = "#f1c40f"; 
+                            activeOpenedTonalite = tonaliteName;
+                        };
+                        var closeSub = function() {
+                            subBranchDiv.style.display = "none";
+                            subRow.style.color = "#FFF";
+                        };
+
+                        closeAllTonalites.push(closeSub);
+
+                        // Gestion du clic pour la tonalité (Accordéon Strict au sein de la catégorie)
+                        subRow.onclick = function(e) {
+                            e.stopPropagation(); // Évite de trigger le clic de la catégorie parente
+                            if (subBranchDiv.style.display === "none") {
+                                // On ferme toutes les autres tonalités ouvertes
+                                for (var t = 0; t < closeAllTonalites.length; t++) {
+                                    closeAllTonalites[t]();
+                                }
+                                openSub();
+                            } else {
+                                closeSub();
+                                activeOpenedTonalite = null;
+                            }
+                        };
+
+                        // Insertion des instruments sous la tonalité
+                        for (var j = 0; j < subInstruments.length; j++) {
+                            (function(instName) {
+                                var isSelected = (instName === selectedInstrument);
+                                
+                                // Si l'instrument est celui sélectionné actuellement, on force l'ouverture
+                                if (isSelected) {
+                                    // 1. Ouvrir la catégorie principale
+                                    for (var c = 0; c < closeAllCategories.length; c++) {
+                                        closeAllCategories[c]();
+                                    }
+                                    openMe();
+                                    
+                                    // 2. Ouvrir la sous-catégorie de tonalité
+                                    for (var t = 0; t < closeAllTonalites.length; t++) {
+                                        closeAllTonalites[t]();
+                                    }
+                                    openSub();
+                                }
+
+                                addTreeRow(instName, function() {
+                                    last_inst_path.set(modeName + "/" + categoryName + "/" + tonaliteName + "/" + instName);
+                                    current_instrument.set(instName);
+                                    closeTreeView();
+                                }, isSelected, subBranchDiv, 55);
+                            })(subInstruments[j]);
+                        }
+                    })(subKey, categoryData[subKey]);
+                }
+            }
+
+        })(catName, fullData[catName]);
     }
 }
 
@@ -210,11 +311,11 @@ function renderTrackTree(tree, basePath, container) {
         } else {
             (function(track) {
                 var isSelected = (track.location === lastLoc);
-                addTreeRow("🎵 " + track.title, function(){ 
+                addTreeRow(track.title, function(){ 
                     track_location.set(track.location);
                     if (typeof updateServerTrack === "function") updateServerTrack(track.location);
                     closeTreeView(); 
-                }, isSelected, container); 
+                }, isSelected, container, 15); 
             })(item);
         }
     }
@@ -222,46 +323,10 @@ function renderTrackTree(tree, basePath, container) {
     for (var f in folders) {
         (function(name, info) {
             var label = name.replace(/([A-Z])/g, ' $1').replace(/^./, function(str){ return str.toUpperCase(); }).trim();
-            addTreeRow(info.icon + label, function() { loadView('tracks', info.path); }, false, container);
+            addTreeRow(info.icon + label, function() { loadView('tracks', info.path); }, false, container, 15);
         })(f, folders[f]);
     }
     if (typeof checkSync === "function") checkSync(); 
-}
-
-function renderInstrumentTree(path, container) {
-    var modeName = (instru_select_mode.get() == MODE_POPULAR) ? "POPULAR" : "CLASSIQUE";
-    var internalPath = path ? modeName + "/" + path : modeName;
-    
-    var parts = internalPath.split("/");
-    var currentLevel = (parts[0] === "POPULAR") ? DATA_UI_POPULAR : DATA_UI_CLASSIQUE;
-    
-    for (var i = 1; i < parts.length; i++) { 
-        if (currentLevel && currentLevel[parts[i]]) {
-            currentLevel = currentLevel[parts[i]];
-        }
-    }
-
-    if (currentLevel instanceof Array) {
-        for (var k = 0; k < currentLevel.length; k++) {
-            (function(inst) { 
-                var isSelected = (inst === current_instrument.get());
-                addTreeRow("🎺 " + inst, function() { 
-                    last_inst_path.set(internalPath + "/" + inst); 
-                    current_instrument.set(inst);
-                    closeTreeView();
-                }, isSelected, container); 
-            })(currentLevel[k]);
-        }
-    } else { 
-        for (var sub in currentLevel) { 
-            (function(s) { 
-                addTreeRow("📁 " + s, function() { 
-                    var nextPath = path ? path + "/" + s : s;
-                    loadView('instruments', nextPath); 
-                }, false, container); 
-            })(sub); 
-        } 
-    }
 }
 
 function closeTreeView() {

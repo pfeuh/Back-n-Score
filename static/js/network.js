@@ -1,4 +1,3 @@
-
 var POOLING_TIMEOUT_MSEC = 2000; // supposed to be a constant
 var POOLING_VALUE = 2000; // supposed to be a constant
 var poolingId = null ;// fonction retardée
@@ -65,8 +64,8 @@ function getScoreNameNbPages() {
 
     // Fonction utilitaire pour formater la ligne (compatible vieux JS)
     //~ function formatLine(label, value) {
-        //~ var type = typeof value;
-        //~ return "<b>" + label + " :</b> " + value + " <i>(" + type + ")</i><br>";
+    //~     var type = typeof value;
+    //~     return "<b>" + label + " :</b> " + value + " <i>(" + type + ")</i><br>";
     //~ }
     //~ htmlContent += formatLine("Dossier", loc);
     //~ htmlContent += formatLine("Instrument", inst);
@@ -88,16 +87,18 @@ function getScoreNameNbPages() {
     xhr.onreadystatechange = function() {
         if (xhr.readyState === 4 && xhr.status === 200) {
             var info = JSON.parse(xhr.responseText);
-            if(info.status == "error"){
+            
+            if (info.status == "error") {
                 console.log("error message:", info.message);
                 if (typeof getScore === "function") {
-                    getScore(null, 0); 
+                    // On envoie une chaîne vide plutôt que null pour éviter les crashs de rendu
+                    getScore("", 0); 
                 }
                 showModal("Attention", info.message);
+                return; // On intercepte et on bloque le script ici pour préserver l'interface intacte
             }
-            else
-                //~ console.log("score:", info.score, "nb_pages:", info.nb_pages);
-                // Vérification de sécurité avant l'appel
+            
+            // Comportement normal si aucune erreur
             if (typeof getScore === "function") {
                 getScore(info.score, info.nb_pages);
             } else {
