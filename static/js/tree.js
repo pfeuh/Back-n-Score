@@ -1,28 +1,23 @@
 function uiSelectInstrument() {
-    // On récupère le chemin complet (ex: "POPULAR/Vents/Clarinette")
     var fullPath = last_inst_path.get() || "";
     var currentModeName = (instru_select_mode.get() == MODE_POPULAR) ? "POPULAR" : "CLASSIQUE";
 
-    // Si le chemin enregistré ne correspond pas au mode actuel, on reset à vide
     if (fullPath.indexOf(currentModeName) !== 0) {
         fullPath = "";
     }
 
-    // On crée le "displayPath" (le chemin sans le mode au début)
     var displayPath = "";
     if (fullPath !== "") {
         var parts = fullPath.split("/");
-        parts.shift(); // On enlève "POPULAR" ou "CLASSIQUE"
+        parts.shift(); 
         displayPath = parts.join("/");
     }
 
-    // Si on est sur un fichier, on remonte au dossier parent pour l'affichage
     var lastSlash = displayPath.lastIndexOf("/");
     var folderPath = (lastSlash !== -1) ? displayPath.substring(0, lastSlash) : displayPath;
     
-    // On appelle loadView avec le chemin "propre"
     loadView('instruments', folderPath);
-    }
+}
 
 function uiSelectTrack() {
     var currentPath = track_location.get() || "";
@@ -37,12 +32,14 @@ function uiSelectTrack() {
 }
 
 function prepareTreeInterface() {
-    var mainContent = document.getElementById('content');
-    mainContent.innerHTML = ""; 
-    mainContent.style.overflow = "hidden";
+    // CORRECTION : On ne ferme plus le menu principal, on le laisse apparent derrière.
+    var popupContent = document.getElementById('tree-popup-content');
+    popupContent.innerHTML = ""; 
 
-    // MODIFICATION : Bloque la barre de menu
     document.body.classList.add('tree-open');
+    
+    var treeOverlay = document.getElementById('tree-popup-overlay');
+    if (treeOverlay) treeOverlay.style.display = 'block';
 
     var navHost = document.createElement('div');
     navHost.id = "breadcrumb";
@@ -53,7 +50,7 @@ function prepareTreeInterface() {
     navHost.style.height = "50px";
     navHost.style.background = "#333";
     navHost.style.zIndex = "10";
-    mainContent.appendChild(navHost);
+    popupContent.appendChild(navHost);
 
     var treeHost = document.createElement('div');
     treeHost.id = "tree-container";
@@ -66,7 +63,7 @@ function prepareTreeInterface() {
     treeHost.style.overflowY = "scroll"; 
     treeHost.style.webkitOverflowScrolling = "touch";
     
-    mainContent.appendChild(treeHost);
+    popupContent.appendChild(treeHost);
 }
 
 function addTreeRow(text, onClick, isSelected, container) {
@@ -78,6 +75,10 @@ function addTreeRow(text, onClick, isSelected, container) {
     div.style.borderBottom = "1px solid #444";
     div.style.boxSizing = "border-box"; 
     div.style.cursor = "pointer";
+    
+    // CORRECTION : Couleur du texte forcée en blanc/clair pour ne pas être moche/invisible sur fond noir
+    div.style.color = "#FFFFFF";
+    div.style.fontSize = "16px";
     
     var cleanText = text.replace(/_/g, " ");
     div.innerHTML = isSelected ? "<b>" + cleanText + "</b>" : cleanText;
@@ -102,7 +103,6 @@ function loadView(viewType, path) {
     var container = document.getElementById('breadcrumb');
     var treeDiv = document.getElementById('tree-container');
 
-    // On rend la navigation et l'arbre de façon symétrique
     renderNavigation(viewType, path, container);
     
     if (viewType === 'tracks') {
@@ -171,7 +171,7 @@ function renderNavigation(view, path, container) {
                 var segment = document.createElement("div"); 
                 segment.style.display = "inline-block";
                 segment.style.padding = "0 5px";
-                segment.style.fontSize = "18px";
+                segment.style.fontSize = "16px";
                 segment.innerText = segmentName.replace(/([A-Z])/g, ' $1').trim();
 
                 if (last) {
@@ -230,9 +230,6 @@ function renderTrackTree(tree, basePath, container) {
 
 function renderInstrumentTree(path, container) {
     var modeName = (instru_select_mode.get() == MODE_POPULAR) ? "POPULAR" : "CLASSIQUE";
-    
-    // On reconstruit le chemin interne pour la recherche de données
-    // Si path est "Vents", internalPath devient "POPULAR/Vents"
     var internalPath = path ? modeName + "/" + path : modeName;
     
     var parts = internalPath.split("/");
@@ -249,7 +246,6 @@ function renderInstrumentTree(path, container) {
             (function(inst) { 
                 var isSelected = (inst === current_instrument.get());
                 addTreeRow("🎺 " + inst, function() { 
-                    // On sauvegarde le chemin COMPLET (avec mode) pour la prochaine fois
                     last_inst_path.set(internalPath + "/" + inst); 
                     current_instrument.set(inst);
                     closeTreeView();
@@ -260,7 +256,6 @@ function renderInstrumentTree(path, container) {
         for (var sub in currentLevel) { 
             (function(s) { 
                 addTreeRow("📁 " + s, function() { 
-                    // On passe le path relatif à loadView (sans le mode)
                     var nextPath = path ? path + "/" + s : s;
                     loadView('instruments', nextPath); 
                 }, false, container); 
@@ -270,21 +265,18 @@ function renderInstrumentTree(path, container) {
 }
 
 function closeTreeView() {
-    var content = document.getElementById('content');
-    content.innerHTML = ""; 
-    content.style.overflow = "auto"; 
+    var treeOverlay = document.getElementById('tree-popup-overlay');
+    if (treeOverlay) treeOverlay.style.display = 'none';
+
+    var popupContent = document.getElementById('tree-popup-content');
+    if (popupContent) popupContent.innerHTML = ""; 
     
-    // MODIFICATION : Libère la barre de menu
     document.body.classList.remove('tree-open');
     document.body.className = ""; 
     
-    // On redessine la partition si elle existe en mémoire
-    if (typeof refreshScore === "function") {
-        content.innerHTML = "";
-        refreshScore();
+    if (typeof checkUpdateScore === "function") {
+        checkUpdateScore();
     }
     
-    // on relance le pooling pour détecter les changements de morceau.
     if (typeof startPooling === "function") startPooling(); 
 }
-

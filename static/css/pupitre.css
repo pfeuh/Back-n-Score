@@ -4,44 +4,94 @@ html, body {
     width: 100%;
     height: 100%;
     overflow: hidden;
-    background-color: #000; /* Fond noir global */
+    background-color: #000;
     position: relative;
 }
 
-/* --- STYLE barre de menu (bandeau horizontal du haut) --- */
+/* --- LOGIQUE POP-UP OVERLAY (Compatible Android 4) --- */
 
-#menu-bar {
-    position: absolute;
+#menu-popup-overlay {
+    position: fixed;
     top: 0;
     left: 0;
-    right: 0;
     width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4); /* Plus transparent pour voir le focus */
+    z-index: 10000;
+    text-align: center;
+}
+
+/* MODIFICATION : L'arbre vient en z-index supérieur mais laisse passer la vue sur le menu */
+#tree-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5); 
+    z-index: 10001; /* Reste au-dessus pour capturer l'attention */
+}
+
+/* MODIFICATION : Boîte beaucoup moins large, centrée sous la barre de menu */
+#tree-popup-content {
+    position: absolute;
+    top: 110px; /* Positionné pile en dessous de la barre de menu (70px + 30px margin + marge) */
+    left: 50%;
+    transform: translateX(-50%);
+    -webkit-transform: translateX(-50%);
+    width: 90%;
+    max-width: 500px; /* Largeur étroite demandée */
+    height: 70%;
+    max-height: 550px;
+    background: #222222; /* Fond gris foncé propre */
+    border: 2px solid #444;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+/* --- TRIGGER ZONE CHAUDE (Haut de l'écran) --- */
+
+#menu-hotspot {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 30px;
+    background: transparent;
+    z-index: 9999;
+    cursor: pointer;
+}
+
+/* --- STYLE barre de menu --- */
+
+#menu-bar {
+    position: relative;
+    margin: 30px auto 0 auto;
+    width: 96%;
+    max-width: 1100px;
     height: 70px;
     background-color: #000088;
     color: #FFF;
-    border-bottom: 1px solid #444;
+    border: 1px solid #444;
+    border-radius: 8px;
     -webkit-box-sizing: border-box;
     box-sizing: border-box;
     display: table;
-    /* On passe en auto pour que les cellules s'adaptent au contenu */
     table-layout: auto; 
     overflow: hidden;
-    margin: 0;
 }
 
-/* Bloque le menu quand le sélecteur est ouvert */
 body.tree-open #menu-bar {
-    pointer-events: none;
-    opacity: 0.3;
-    filter: grayscale(1); /* Optionnel : rend le bleu plus neutre pour moins attirer l'œil */
     transition: opacity 0.3s ease;
 }
 
-/* --- STYLE contenu (tout le reste de la page) --- */
+/* --- STYLE contenu --- */
 
 #content {
     position: absolute;
-    top: 70px;
+    top: 0;
     left: 0;
     right: 0;
     bottom: 0;
@@ -49,19 +99,18 @@ body.tree-open #menu-bar {
     color: #FFF;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-	padding: 0;
+    padding: 0;
+    z-index: 1;
 }
 
 /* --- STYLE menu partie gauche --- */
 
-/* Cellules de tableau pour l'alignement Gauche/Droite */
 .menu-left {
     display: table-cell;
     vertical-align: middle;
     padding-left: 15px;
     text-align: left;
     font-size: 0; 
-    /* Force cette cellule à être la plus petite possible */
     width: 1%;
     white-space: nowrap;
 }
@@ -75,7 +124,6 @@ body.tree-open #menu-bar {
     text-align: right;
     white-space: nowrap; 
     font-size: 0;
-    /* Prendra automatiquement tout l'espace restant sans déborder */
 }
 
 /* Style commun pour les éléments cliquables */
@@ -95,7 +143,7 @@ body.tree-open #menu-bar {
     text-transform: uppercase;
     -webkit-box-sizing: border-box;
     box-sizing: border-box;
-    margin-left: 3px;
+    margin-left: 5px; 
     margin-right: 0;
     text-decoration: none;
     text-align: center;
@@ -169,7 +217,6 @@ body.tree-open #menu-bar {
     padding: 10px;
 }
 
-
 /* Le bouton rouge de fermeture */
 .btn-cancel {
     display: inline-block;
@@ -177,20 +224,20 @@ body.tree-open #menu-bar {
     height: 34px;
     line-height: 34px;
     text-align: center;
-    background-color: #e74c3c; /* Rouge vif */
+    background-color: #e74c3c; 
     color: white;
     border-radius: 6px;
     cursor: pointer;
     margin-right: 15px;
     font-weight: bold;
     font-size: 18px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.3); /* Un peu de relief */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
     vertical-align: middle;
 }
 
 .btn-cancel:active {
-    background-color: #c0392b; /* Rouge plus foncé quand on appuie */
-    transform: translateY(1px); /* Effet d'enfoncement */
+    background-color: #c0392b;
+    transform: translateY(1px);
 }
 
 /* Style pour les éléments du breadcrumb */
@@ -211,7 +258,6 @@ body.tree-open #menu-bar {
 #score-container {
     background-color: #1a1a1a;
     cursor: pointer;
-    /* Supprime le flash bleu sur le div de capture */
     -webkit-tap-highlight-color: rgba(0,0,0,0);
     -webkit-tap-highlight-color: transparent;
 }
@@ -219,13 +265,13 @@ body.tree-open #menu-bar {
 .score-page {
     display: block;
     margin: 0 auto;
-    pointer-events: none; /* L'image ne reçoit rien, le clic traverse vers le container */
+    pointer-events: none; 
     -webkit-user-select: none;
     user-select: none;
     border: none;
 }
 
-/* --- STYLE MESSAGE ERREUR (KISS & Android 4) --- */
+/* --- STYLE MESSAGE ERREUR --- */
 
 .error-screen {
     padding: 40px 20px;
@@ -237,7 +283,7 @@ body.tree-open #menu-bar {
     border: 2px solid #e74c3c;
     border-radius: 8px;
     padding: 20px;
-    display: inline-block; /* Pour ne pas prendre toute la largeur si le texte est court */
+    display: inline-block; 
     max-width: 90%;
 }
 
@@ -256,7 +302,6 @@ body.tree-open #menu-bar {
     margin-bottom: 25px;
 }
 
-/* On réutilise les codes couleurs du menu-btn pour le bouton OK */
 .btn-ok {
     display: inline-block;
     padding: 15px 40px;
@@ -273,4 +318,3 @@ body.tree-open #menu-bar {
 .btn-ok:active {
     background-color: #d4ac0d;
 }
-

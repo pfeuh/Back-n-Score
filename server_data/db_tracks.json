@@ -1696,10 +1696,6 @@
         "location": "bands/pierreFaller/cafette"
     },
     {
-        "title": "Cafette en SOLm",
-        "location": "bands/pierreFaller/cafetteEnSolm"
-    },
-    {
         "title": "Camel",
         "location": "bands/pierreFaller/camel"
     },
@@ -6798,10 +6794,6 @@
     {
         "title": "Duo des fleurs",
         "location": "styles/classic/duoDesFleurs"
-    },
-    {
-        "title": "Fraise Tagada!",
-        "location": "styles/classic/fraiseTagada"
     },
     {
         "title": "Gnossienne Un",

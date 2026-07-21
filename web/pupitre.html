@@ -11,40 +11,58 @@
 
 <body>
 
-    <div id="menu-bar">
-        <div class="menu-left">
-            <button class="menu-btn" onclick="uiSelectTrack() ">MORCEAU</button>
+    <!-- ZONE CHAUDE : Invisible en haut de l'écran -->
+    <div id="menu-hotspot" onclick="openMenu()"></div>
+
+    <!-- OVERLAY POPUP MENU : Contient la barre de menu principale -->
+    <div id="menu-popup-overlay" style="display: none;" onclick="closeMenu(event)">
+        
+        <div id="menu-bar">
+            <div class="menu-left">
+                <button class="menu-btn" onclick="uiSelectTrack()">MORCEAU</button>
+            </div>
+
+            <div class="menu-right">
+            
+                <button id="bt_clock" class="menu-btn" style="background-color: #101010;">12:34</button>
+            
+                <button id="bt_debug" class="menu-btn" style="background-color: #101010;" onclick="devDebug()">🐢</button>
+            
+                <button id="instru-select" class="menu-btn" onclick="uiSelectInstrument()">Instrument</button>
+                
+                <label class="solo-label">
+                    <input type="checkbox" id="easy-check" onchange="setEasy(this.checked)">
+                    <span>EASY</span>
+                </label>
+
+                <select id="voice-sel" class="custom-select" onchange="setVoice(this.value)">
+                    <option value="1">Voix 1</option>
+                    <option value="2">Voix 2</option>
+                    <option value="3">Voix 3</option>
+                    <option value="4">Voix 4</option>
+                </select>
+                
+                <label class="solo-label">
+                    <input type="checkbox" id="solo-check" onchange="setSolo(this.checked)">
+                    <span>SOLO</span>
+                </label>
+
+                <div id="mode-toggle" class="menu-btn" onclick="setMode()">---</div>
+                
+                <button class="menu-btn close-btn" onclick="toggleMenu(false)" style="background-color: #cc0000; color: white;">✕</button>
+            </div>
         </div>
 
-        <div class="menu-right">
-        
-            <button id="bt_clock" class="menu-btn" style="background-color: #101010; ">12:34</button>
-        
-            <button id="bt_debug" class="menu-btn" style="background-color: #101010;" onclick="devDebug() ">🐢</button>
-        
-            <button id="instru-select" class="menu-btn" onclick="uiSelectInstrument() ">Instrument</button>
-            
-            <label class="solo-label">
-                <input type="checkbox" id="easy-check" onchange="setEasy(this.checked)">
-                <span>EASY</span>
-            </label>
+    </div>
 
-            <select id="voice-sel" class="custom-select" onchange="setVoice(this.value)">
-                <option value="1">Voix 1</option>
-                <option value="2">Voix 2</option>
-                <option value="3">Voix 3</option>
-                <option value="4">Voix 4</option>
-            </select>
-            
-            <label class="solo-label">
-                <input type="checkbox" id="solo-check" onchange="setSolo(this.checked)">
-                <span>SOLO</span>
-            </label>
-
-            <div id="mode-toggle" class="menu-btn" onclick="setMode()">---</div>
+    <!-- OVERLAY POUR L'ARBRE : Aligné sous le menu, gère le clic à côté pour fermer -->
+    <div id="tree-popup-overlay" style="display: none;" onclick="closeTreeOverlay(event)">
+        <div id="tree-popup-content">
+            <!-- Rempli dynamiquement par tree.js -->
         </div>
     </div>
 
+    <!-- Conteneur fixe pour le score -->
     <div id="content"></div>
 
     <script src="/static/js/score.js"></script>
@@ -53,6 +71,46 @@
     <script src="/static/js/pupitre.js"></script>
     <script src="/static/js/network.js"></script>
     <script src="/static/js/clock.js"></script>
+
+    <!-- LOGIQUE SIMPLIFIÉE COMPATIBLE ANDROID 4 -->
+    <script>
+        function toggleMenu(show) {
+            var overlay = document.getElementById('menu-popup-overlay');
+            if (show) {
+                overlay.style.display = 'block';
+            } else {
+                // Si on ferme le menu, on ferme aussi l'arbre pour éviter qu'il reste orphelin
+                overlay.style.display = 'none';
+                if (typeof closeTreeView === "function") {
+                    var treeOverlay = document.getElementById('tree-popup-overlay');
+                    if (treeOverlay && treeOverlay.style.display === 'block') {
+                        closeTreeView();
+                    }
+                }
+            }
+        }
+
+        function openMenu() {
+            toggleMenu(true);
+        }
+
+        function closeMenu(event) {
+            var targetId = event.target.id || event.target.getAttribute('id');
+            if (targetId === 'menu-popup-overlay') {
+                toggleMenu(false);
+            }
+        }
+
+        // Ferme l'arbre si on clique sur la zone floue extérieure
+        function closeTreeOverlay(event) {
+            var targetId = event.target.id || event.target.getAttribute('id');
+            if (targetId === 'tree-popup-overlay') {
+                if (typeof closeTreeView === "function") {
+                    closeTreeView();
+                }
+            }
+        }
+    </script>
 
 </body>
 </html>
