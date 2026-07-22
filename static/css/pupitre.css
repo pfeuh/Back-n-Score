@@ -103,6 +103,15 @@ body.tree-open #menu-bar {
     z-index: 1;
 }
 
+/* --- LOGIQUE DE L'HORLOGE POSITIONNÉE EN HAUT À DROITE --- */
+#bt_clock {
+    position: fixed; /* Changé de absolute à fixed pour bloquer l'écran */
+    top: 10px;
+    right: 10px;
+    z-index: 5; /* Supérieur au z-index de #content pour passer au premier plan */
+    margin: 0; /* Écrase le margin-left global de .menu-btn pour un alignement parfait */
+}
+
 /* --- STYLE menu partie gauche --- */
 
 .menu-left {
