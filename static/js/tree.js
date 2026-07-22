@@ -291,6 +291,20 @@ function renderTrueInstrumentTree(container) {
 }
 
 function renderTrackTree(tree, basePath, container) {
+    container.innerHTML = ""; // On vide le conteneur avant le rendu pour éviter les cumuls de dossiers parents
+
+    // Ajout du bouton de retour si on se trouve dans un sous-dossier
+    if (basePath) {
+        var lastSlash = basePath.lastIndexOf("/");
+        var parentPath = "";
+        if (lastSlash !== -1) {
+            parentPath = basePath.substring(0, lastSlash);
+        }
+        addTreeRow("📁 .. [Retour]", function() {
+            loadView('tracks', parentPath);
+        }, false, container, 15);
+    }
+
     var folders = {};
     var lastLoc = track_location.get();
 

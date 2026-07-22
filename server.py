@@ -388,17 +388,29 @@ def serve_scores(filename):
 @app.route('/api/admin/refresh', methods=['POST'])
 def admin_refresh():
     try:
-        result = subprocess.run(['python3', 'tools/updateDatabase.py'], 
+        # Résolution du chemin absolu du script basé sur l'emplacement actuel de l'application
+        script_path = os.path.join(BASE_DIR, 'tools', 'updateDatabase.py')
+        
+        # Vérification préventive pour éviter les comportements indéterminés de subprocess
+        if not os.path.exists(script_path):
+            print(f"Erreur : Le script est introuvable au chemin {script_path}")
+            return jsonify({"success": False, "message": "Le script de mise à jour est introuvable."}), 404
+
+        result = subprocess.run(['python3', script_path], 
                                 capture_output=True, 
                                 text=True, 
+                                cwd=BASE_DIR,
                                 check=True)
         
         print("Script Python exécuté avec succès:", result.stdout)
         return jsonify({"success": True, "message": "Base de données synchronisée."}), 200
 
     except subprocess.CalledProcessError as e:
-        print("Erreur lors de l'exécution du script Python:", e.stderr)
-        return jsonify({"success": False, "message": "Erreur lors du scan du disque."}), 500
+        print("Erreur lors de l'exécution du script Python (code retour non-nul):", e.stderr)
+        return jsonify({"success": False, "message": f"Erreur lors du scan du disque : {e.stderr or 'Erreur inconnue'}"}), 500
+    except Exception as e:
+        print("Exception générale levée dans Flask lors du refresh :", str(e))
+        return jsonify({"success": False, "message": f"Erreur système interne : {str(e)}"}), 500
 
 @app.route('/api/admin/crud', methods=['POST'])
 def admin_crud():

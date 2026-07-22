@@ -411,7 +411,6 @@
                     var li = document.createElement('li');
                     li.className = "folder-branch";
                     
-                    // Conteneur de ligne pour isoler la flèche du bouton cliquable
                     var rowDiv = document.createElement('div');
                     rowDiv.className = "tree-row";
                     
@@ -419,7 +418,6 @@
                     toggleSpan.className = "folder-toggle";
                     toggleSpan.innerHTML = "▶";
                     
-                    // Clic sur la flèche : ouvre/ferme sans impacter la sélection
                     toggleSpan.onclick = (function(targetLi) {
                         return function(e) {
                             targetLi.classList.toggle('expanded');
@@ -428,7 +426,6 @@
 
                     rowDiv.appendChild(toggleSpan);
                     
-                    // Zone cliquable pour la sélection du dossier (flèche exclue)
                     var folderSpan = document.createElement('span');
                     folderSpan.className = "selectable-path folder-node";
                     folderSpan.innerHTML = "📁 " + item.name;
@@ -455,7 +452,6 @@
                         var rowDiv = document.createElement('div');
                         rowDiv.className = "tree-row";
                         
-                        // Un espaceur pour aligner le morceau avec le texte des dossiers
                         var spacer = document.createElement('span');
                         spacer.className = "track-spacer";
                         rowDiv.appendChild(spacer);
@@ -536,13 +532,33 @@
         function triggerRefresh() {
             var btn = document.getElementById('btn-refresh');
             btn.disabled = true; btn.innerHTML = "⏳ Indexation...";
+            
             makeRequest('POST', API_REFRESH_URL, {}, function (err, data) {
-                if (!err) {
-                    alert("Indexation terminée avec succès !");
-                } else {
-                    alert("Erreur lors de l'indexation.");
-                }
                 btn.disabled = false; btn.innerHTML = "🔄 Indexer la DB";
+                
+                if (err) {
+                    alert("Erreur critique système lors de la communication avec le serveur.");
+                    return;
+                }
+                
+                // Traitement de la réponse structurée du script Python
+                if (data && (data.status === "success" || data.status === "warning")) {
+                    var msg = "Indexation terminée !\n";
+                    msg += "Morceaux indexés : " + data.tracks_count + "\n";
+                    msg += "Nouveaux PDF convertis : " + data.converted_count + "\n";
+                    msg += "Temps d'exécution : " + data.duration + "\n";
+                    
+                    if (data.errors && data.errors.length > 0) {
+                        msg += "\n[⚠️ Attention] Des anomalies d'instruments ont été ignorées (" + data.errors.length + ") :\n";
+                        for (var i = 0; i < data.errors.length; i++) {
+                            msg += "- " + data.errors[i] + "\n";
+                        }
+                    }
+                    alert(msg);
+                    cachedRawData = null; // Force le rechargement de l'arbre au prochain clic
+                } else {
+                    alert("Erreur indéterminée renvoyée par le serveur.");
+                }
             });
         }
 
@@ -584,7 +600,6 @@
             var title = document.getElementById('create-title').value;
             if (!loc || !title) { alert("Champs manquants."); return; }
             
-            // On conserve l'intitulé exact saisi par l'utilisateur
             var cleanDirName = title.trim();
             var fullLocation = loc + '/' + cleanDirName;
 

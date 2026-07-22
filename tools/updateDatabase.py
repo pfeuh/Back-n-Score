@@ -50,7 +50,7 @@ def load_config():
 # Chargement dynamique de la configuration
 CONFIG = load_config()
 
-# Correction : On utilise le dossier configuré dans le JSON local de la machine !
+# On utilise le dossier configuré dans le JSON local de la machine !
 DATABASE_DIR = CONFIG.get("DATABASE", DEFAULT_CONFIG["DATABASE"])
 OUTPUT_DIR = BASE_DIR / "server_data"
 
@@ -62,17 +62,19 @@ def sortTracks(tracks):
 def checkTrack(instrument_name, track_path):
     root_name = getFirstVoice(instrument_name)
     if not isValidInstrument(root_name):
-        raise Exception(f"ERROR Instrument ou Tonalité inconnu '{instrument_name}' dans {track_path}")
+        raise Exception(f"Instrument ou Tonalité inconnu '{instrument_name}' dans {track_path}")
 
 def generate_track_tree():
-    """Scanne la base de données et génère le catalogue plat."""
+    """Scanne la base de données et génère le catalogue plat. Retourne aussi les erreurs collectées."""
     print(f"Scan de la database située dans : {DATABASE_DIR}...")
     tracks = []
-    converted_count = 0  # Notre compteur
+    converted_count = 0
+    errors = []  # Contiendra les messages des fichiers en anomalie
     
     if not os.path.exists(DATABASE_DIR):
-        print(f"ERREUR : Le dossier DATABASE '{DATABASE_DIR}' n'existe pas !")
-        return tracks, converted_count
+        err_msg = f"Le dossier DATABASE '{DATABASE_DIR}' n'existe pas !"
+        print(f"ERREUR : {err_msg}")
+        return tracks, converted_count, [err_msg]
         
     for root, dirs, files in os.walk(DATABASE_DIR):
         if "trackname.txt" in files:
@@ -83,92 +85,84 @@ def generate_track_tree():
                 if f.endswith(".pdf"):
                     if VERBOSE:
                         print(f)
-                    # On retire les 4 derniers caractères (.pdf) sans toucher à la casse
                     instr_key = f[:-4]
                     
-                    # 1. Sanité
-                    checkTrack(instr_key, relative_path)
+                    try:
+                        # 1. Sanité
+                        checkTrack(instr_key, relative_path)
+                        
+                        # 2. Moulinette Delta
+                        pdf_full_path = os.path.join(root, f)
+                        if trackPdfToJpg(pdf_full_path):
+                            converted_count += 1
+                            
+                    except Exception as err:
+                        # Enregistrement de l'erreur pour la remonter au client HTTP
+                        errors.append(f"{relative_path}/{f} -> {str(err)}")
             
-                    # 2. Moulinette Delta
-                    pdf_full_path = os.path.join(root, f)
-                    if trackPdfToJpg(pdf_full_path):
-                        converted_count += 1
-                    
             # Lecture du titre
             try:
                 with open(os.path.join(root, "trackname.txt"), "r", encoding="utf-8") as f:
                     title = f.read().strip()
                 tracks.append({"title": title, "location": relative_path})
             except Exception as e:
-                print(f"Erreur lecture titre dans {relative_path}: {e}")
+                errors.append(f"{relative_path}/trackname.txt -> Erreur lecture titre: {str(e)}")
                 
     sortTracks(tracks)
                 
-    return tracks, converted_count
+    return tracks, converted_count, errors
 
 def generate_ui_trees():
     popular = {
         "MELODISTES": {t: [] for t in TONALITES if t != "NP"},
-        "VOIX": [], # On crée une section dédiée pour le chant
+        "VOIX": [],
         "SECTION BASSE": list(GROUP_BASSE),
         "SECTION POMPE": list(GROUP_POMPE),
         "PERCUSSIONS": []
     }
     
-    # Classy reste basé sur tes FAMILIES (ne change pas)
     classy = {fam: [] for fam in FAMILIES}
 
     for key, data in INSTRUMENTS.items():
         tonality, clef, octave, family = data
         
-        # --- LOGIQUE POPULAR ---
-        # 1. Gestion des Voix (Section à part)
         if family in ["VOIX_HOMME", "VOIX_FEMME", "VOIX", "TEXTE"]:
             popular["VOIX"].append(key)
-            
-        # 2. Gestion des Percussions (uniquement les non-mélodiques)
         elif family == "PERCUSSIONS":
             popular["PERCUSSIONS"].append(key)
-            
-        # 3. Gestion des Mélodistes (inclut maintenant PERCUSSIONS_MELODIQUES)
         elif tonality in popular["MELODISTES"]:
             if key not in GROUP_BASSE and key not in GROUP_POMPE:
                 if "grille" not in key:
                     popular["MELODISTES"][tonality].append(key)
 
-        # --- LOGIQUE CLASSY (Immuable) ---
         if family in classy:
             classy[family].append(key)
 
-    # --- POST-TRAITEMENT POPULAR ---
     for tona, list_instr in popular["MELODISTES"].items():
-        list_instr.sort() # Alphabet
+        list_instr.sort()
         if tona in VIRTUAL_INSTRUMENTS:
-            list_instr.insert(0, tona) # Tonalité en tête
+            list_instr.insert(0, tona)
         
-        # Ajout de la grille à la fin
         grille_name = "grille" if tona == "DO" else f"grille_{tona.lower()}"
         if grille_name in INSTRUMENTS:
             list_instr.append(grille_name)
 
-    # Tri des autres sections
     popular["VOIX"].sort()
     popular["SECTION BASSE"].sort()
     popular["SECTION POMPE"].sort()
     popular["PERCUSSIONS"].sort()
 
-    # Nettoyage
     popular = {k: v for k, v in popular.items() if len(v) > 0}
     classy = {k: v for k, v in classy.items() if len(v) > 0}
 
     return popular, classy
 
 def run():
-    start_time = time.time() # Top départ
+    """Fonction principale. Renvoie un dictionnaire de bilan avec les erreurs pour l'API."""
+    start_time = time.time()
     OUTPUT_DIR.mkdir(exist_ok=True)
 
-    # Génération et sauvegarde
-    tracks, total_converted = generate_track_tree()
+    tracks, total_converted, errors = generate_track_tree()
     
     with open(OUTPUT_DIR / "db_tracks.json", "w", encoding="utf-8") as f:
         json.dump(tracks, f, indent=4, ensure_ascii=False)
@@ -183,24 +177,20 @@ def run():
     with open(OUTPUT_DIR / "meta_instruments.json", "w", encoding="utf-8") as f:
         json.dump(meta, f, indent=4, ensure_ascii=False)
 
-    # --- RAPPORT DE FIN ---
     end_time = time.time()
     duration = end_time - start_time
-    
-    # Conversion en minutes/secondes pour la lisibilité
     minutes = int(duration // 60)
     seconds = int(duration % 60)
 
-    print("\n" + "="*40)
-    print("RAPPORT DE LA MOULINETTE")
-    print("="*40)
-    print(f"Morceaux indexés      : {len(tracks)}")
-    print(f"PDF convertis (Delta) : {total_converted}")
-    print(f"Durée totale          : {minutes}m {seconds}s")
-    if total_converted > 0:
-        avg = duration / total_converted
-        print(f"Vitesse moyenne       : {avg:.2f} sec / PDF")
-    print("="*40)
+    # Dictionnaire de bilan renvoyé à l'appelant Python (votre route Flask /api/admin/refresh)
+    return {
+        "status": "success" if not errors else "warning",
+        "tracks_count": len(tracks),
+        "converted_count": total_converted,
+        "duration": f"{minutes}m {seconds}s",
+        "errors": errors
+    }
 
 if __name__ == "__main__":
-    run()
+    res = run()
+    print(f"\nIndexation terminée. Status: {res['status']}. Morceaux: {res['tracks_count']}. Erreurs: {len(res['errors'])}")
