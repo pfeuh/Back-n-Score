@@ -58,8 +58,8 @@ html, body {
     top: 0;
     left: 0;
     width: 100%;
-    height: 30px;
-    background: transparent;
+    height: 20%; /* Utilisation de 20% de la hauteur de l'écran, compatible Android 4 */
+    background: rgba(0, 0, 0, 0); /* CORRECTION : Assure le déclenchement du clic sur les vieux moteurs WebKit */
     z-index: 9999;
     cursor: pointer;
 }
@@ -110,6 +110,7 @@ body.tree-open #menu-bar {
     right: 10px;
     z-index: 5; /* Supérieur au z-index de #content pour passer au premier plan */
     margin: 0; /* Écrase le margin-left global de .menu-btn pour un alignement parfait */
+    pointer-events: none; /* CORRECTION : L'horloge ne bloque plus les clics tactiles de la zone chaude */
 }
 
 /* --- STYLE menu partie gauche --- */
