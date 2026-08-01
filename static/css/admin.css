@@ -127,12 +127,20 @@ input[type="text"]:focus { border-color: var(--primary-color); outline: none; }
     display: inline-flex;
     align-items: center;
     background-color: #222;
-    padding: 4px 8px;
+    padding: 6px 10px;
     border-radius: 4px;
     gap: 10px;
     min-width: 280px;
-    justify-content: space-between;
+    justify-content: flex-start;
     border: 1px solid #333;
+    cursor: pointer;
+}
+.priority-row:hover {
+    background-color: #2a2a2a;
+}
+.priority-row.selected-priority {
+    background-color: var(--selected-bg) !important;
+    border-color: var(--primary-color) !important;
 }
 
 .priority-label {
@@ -140,21 +148,6 @@ input[type="text"]:focus { border-color: var(--primary-color); outline: none; }
 }
 .folder-item { color: #ffb400; font-weight: bold; }
 .track-item { color: #ffffff; }
-
-.arrow-controls {
-    display: flex;
-    gap: 2px;
-}
-.btn-arrow {
-    background-color: #333;
-    color: #ccc;
-    border: 1px solid #444;
-    padding: 2px 6px;
-    cursor: pointer;
-    font-size: 0.75rem;
-    border-radius: 3px;
-}
-.btn-arrow:hover { background-color: #444; color: white; }
 
 /* FENÊTRE MODALE POUR L'ARBRE DE SELECTION */
 .modal-overlay {

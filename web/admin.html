@@ -20,10 +20,16 @@
         <section class="crud-card card-priority">
             <div class="crud-title" style="color: var(--priority-color);">🔢 Structure & Priorités (mp3_types.json)</div>
             <p style="font-size: 0.8rem; color: #aaa; margin: 0 0 10px 0;">
-                Modifiez l'ordre de priorité des dossiers et morceaux graphiquement à l'aide des flèches, puis sauvegardez la configuration globale.
+                Cliquez sur un élément pour le sélectionner, puis utilisez les flèches pour le déplacer dans son niveau.
             </p>
-            <div class="action-zone" style="justify-content: flex-start; margin-bottom: 10px;">
-                <button class="btn btn-priority" style="background-color: var(--accent-color); color: white; margin-right: 5px;" onclick="loadPriorityTree()">📥 Charger la configuration</button>
+            <div class="action-zone" style="justify-content: space-between; margin-bottom: 10px;">
+                <button class="btn btn-priority" style="background-color: var(--accent-color); color: white;" onclick="loadPriorityTree()">📥 Charger la configuration</button>
+                
+                <!-- Contrôles globaux pour monter / descendre l'élément sélectionné -->
+                <div style="display: flex; gap: 5px;">
+                    <button class="btn btn-priority" onclick="moveSelectedPriority(-1)" title="Monter l'élément sélectionné">▲ Monter</button>
+                    <button class="btn btn-priority" onclick="moveSelectedPriority(1)" title="Descendre l'élément sélectionné">▼ Descendre</button>
+                </div>
             </div>
             
             <div id="priority-tree-zone" class="priority-tree-container">
