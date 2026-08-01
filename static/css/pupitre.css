@@ -16,12 +16,11 @@ html, body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.4); /* Plus transparent pour voir le focus */
+    background: rgba(0, 0, 0, 0.4);
     z-index: 10000;
     text-align: center;
 }
 
-/* MODIFICATION : L'arbre vient en z-index supérieur mais laisse passer la vue sur le menu */
 #tree-popup-overlay {
     position: fixed;
     top: 0;
@@ -29,37 +28,52 @@ html, body {
     width: 100%;
     height: 100%;
     background: rgba(0, 0, 0, 0.5); 
-    z-index: 10001; /* Reste au-dessus pour capturer l'attention */
+    z-index: 10001;
+    text-align: center;
 }
 
-/* MODIFICATION : Boîte beaucoup moins large, centrée sous la barre de menu */
 #tree-popup-content {
-    position: absolute;
-    top: 110px; /* Positionné pile en dessous de la barre de menu (70px + 30px margin + marge) */
-    left: 50%;
-    transform: translateX(-50%);
-    -webkit-transform: translateX(-50%);
-    width: 90%;
-    max-width: 500px; /* Largeur étroite demandée */
+    position: relative;
+    top: 110px;
+    /* STRUCTURE INLINE-BLOCK : La boîte prend exactement la taille de son contenu */
+    display: inline-block;
+    text-align: left; 
+    
+    /* LIMITES DE SÉCURITÉ : s'adapte élégamment, même si l'arbre ne contient que 2 lignes */
+    min-width: 320px; 
+    max-width: 90%;
     height: 70%;
     max-height: 550px;
-    background: #222222; /* Fond gris foncé propre */
+    
+    background: #222222;
     border: 2px solid #444;
     border-radius: 8px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.6);
     overflow: hidden;
     box-sizing: border-box;
+    -webkit-box-sizing: border-box;
 }
 
-/* --- TRIGGER ZONE CHAUDE (Haut de l'écran) --- */
+/* --- TRIGGER ZONES CHAUDES (Haut de l'écran divisé en 2) --- */
 
-#menu-hotspot {
+#hotspot-left {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 20%; /* Utilisation de 20% de la hauteur de l'écran, compatible Android 4 */
-    background: rgba(0, 0, 0, 0); /* CORRECTION : Assure le déclenchement du clic sur les vieux moteurs WebKit */
+    width: 50%;
+    height: 20%;
+    background: rgba(0, 0, 0, 0);
+    z-index: 9999;
+    cursor: pointer;
+}
+
+#hotspot-right {
+    position: fixed;
+    top: 0;
+    left: 50%;
+    width: 50%;
+    height: 20%;
+    background: rgba(0, 0, 0, 0);
     z-index: 9999;
     cursor: pointer;
 }
@@ -103,26 +117,13 @@ body.tree-open #menu-bar {
     z-index: 1;
 }
 
-/* --- LOGIQUE DE L'HORLOGE POSITIONNÉE EN HAUT À DROITE --- */
 #bt_clock {
-    position: fixed; /* Changé de absolute à fixed pour bloquer l'écran */
+    position: fixed;
     top: 10px;
     right: 10px;
-    z-index: 5; /* Supérieur au z-index de #content pour passer au premier plan */
-    margin: 0; /* Écrase le margin-left global de .menu-btn pour un alignement parfait */
-    pointer-events: none; /* CORRECTION : L'horloge ne bloque plus les clics tactiles de la zone chaude */
-}
-
-/* --- STYLE menu partie gauche --- */
-
-.menu-left {
-    display: table-cell;
-    vertical-align: middle;
-    padding-left: 15px;
-    text-align: left;
-    font-size: 0; 
-    width: 1%;
-    white-space: nowrap;
+    z-index: 5;
+    margin: 0;
+    pointer-events: none;
 }
 
 /* --- STYLE menu partie droite --- */
@@ -131,7 +132,8 @@ body.tree-open #menu-bar {
     display: table-cell;
     vertical-align: middle;
     padding-right: 15px;
-    text-align: right;
+    padding-left: 15px;
+    text-align: center;
     white-space: nowrap; 
     font-size: 0;
 }
@@ -154,7 +156,7 @@ body.tree-open #menu-bar {
     -webkit-box-sizing: border-box;
     box-sizing: border-box;
     margin-left: 5px; 
-    margin-right: 0;
+    margin-right: 5px;
     text-decoration: none;
     text-align: center;
 }

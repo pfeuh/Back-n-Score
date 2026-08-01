@@ -1,4 +1,4 @@
-// Variables globales pour mémoriser l'état d'ouverture de l'accordéon strict
+// Variables globales pour mémoriser l'état d'ouverture de l'arbre
 var activeOpenedCategory = null;
 var activeOpenedTonalite = null;
 
@@ -10,15 +10,7 @@ function uiSelectInstrument() {
 }
 
 function uiSelectTrack() {
-    var currentPath = track_location.get() || "";
-    var lastSlash = currentPath.lastIndexOf("/");
-    var folderPath = "";
-    
-    if (lastSlash !== -1) {
-        folderPath = currentPath.substring(0, lastSlash);
-    }
-
-    loadView('tracks', folderPath);
+    loadView('tracks', "");
 }
 
 function prepareTreeInterface(viewType) {
@@ -69,6 +61,7 @@ function addTreeRow(text, onClick, isSelected, container, paddingLeft) {
     div.style.cursor = "pointer";
     div.style.color = "#FFFFFF";
     div.style.fontSize = "16px";
+    div.style.whiteSpace = "nowrap"; /* Empêche un texte long d'instrument de revenir à la ligne */
     
     var cleanText = text.replace(/_/g, " ");
     div.innerHTML = isSelected ? "<b>" + cleanText + "</b>" : cleanText;
@@ -88,7 +81,7 @@ function addTreeRow(text, onClick, isSelected, container, paddingLeft) {
 }
 
 function loadView(viewType, path) {
-    stopPooling();
+    if (typeof stopPooling === "function") stopPooling();
     prepareTreeInterface(viewType); 
     
     var treeDiv = document.getElementById('tree-container');
@@ -103,15 +96,15 @@ function loadView(viewType, path) {
 function renderTrueInstrumentTree(container) {
     container.innerHTML = "";
     
+    document.body.classList.add('tree-instruments-open');
+    
     var modeName = (instru_select_mode.get() == MODE_POPULAR) ? "POPULAR" : "CLASSIQUE";
     var data = (modeName === "POPULAR") ? DATA_UI_POPULAR : DATA_UI_CLASSIQUE;
     var selectedInstrument = current_instrument.get();
 
-    // Tableaux pour stocker les fonctions de fermeture afin de gérer l'accordéon strict à la volée
     var closeAllCategories = [];
     var closeAllTonalites = [];
 
-    // --- Ajout manuel de la catégorie CHEF avec "conducteur" en minuscules ---
     var fullData = {};
     fullData["CHEF"] = ["conducteur", "tutti"];
     for (var k in data) {
@@ -120,12 +113,10 @@ function renderTrueInstrumentTree(container) {
         }
     }
 
-    // Parcourt les catégories principales (CHEF, BOIS, CUIVRES, MELODISTES...)
     for (var catName in fullData) {
         if (!fullData.hasOwnProperty(catName)) continue;
 
         (function(categoryName, categoryData) {
-            // Création de l'entête de la catégorie
             var catRow = document.createElement("div");
             catRow.style.backgroundColor = "#2a2a2a";
             catRow.style.borderBottom = "2px solid #444";
@@ -134,15 +125,14 @@ function renderTrueInstrumentTree(container) {
             catRow.style.padding = "14px 15px";
             catRow.style.cursor = "pointer";
             catRow.style.fontSize = "16px";
+            catRow.style.whiteSpace = "nowrap";
             catRow.innerText = "📁 " + categoryName.replace(/_/g, " ");
             container.appendChild(catRow);
 
-            // Conteneur de la branche (les enfants)
             var branchDiv = document.createElement("div");
-            branchDiv.style.display = "none"; // Masqué par défaut
+            branchDiv.style.display = "none"; 
             container.appendChild(branchDiv);
 
-            // Fonctions internes pour ouvrir/fermer cette catégorie spécifique
             var openMe = function() {
                 branchDiv.style.display = "block";
                 catRow.innerText = "📂 " + categoryName.replace(/_/g, " ");
@@ -155,40 +145,31 @@ function renderTrueInstrumentTree(container) {
 
             closeAllCategories.push(closeMe);
 
-            // Si c'est la catégorie précédemment ouverte, on la garde ouverte au chargement
             if (activeOpenedCategory === categoryName) {
                 openMe();
             }
 
-            // Gestion du clic pour la catégorie (Accordéon Strict)
             catRow.onclick = function() {
                 if (branchDiv.style.display === "none") {
-                    // On ferme d'abord toutes les autres catégories principales
                     for (var c = 0; c < closeAllCategories.length; c++) {
                         closeAllCategories[c]();
                     }
                     openMe();
                 } else {
                     closeMe();
-                    activeOpenedCategory = null;
+                    if (activeOpenedCategory === categoryName) {
+                        activeOpenedCategory = null;
+                    }
                 }
             };
 
-            // Remplissage de la branche
             if (categoryData instanceof Array) {
-                // Cas standard : Tableau direct d'instruments (ex: CHEF, CUIVRES, VOIX...)
                 for (var i = 0; i < categoryData.length; i++) {
                     (function(instName) {
                         var isSelected = (instName === selectedInstrument);
-                        
-                        // Si l'instrument est sélectionné au chargement, on déplie la catégorie
                         if (isSelected) {
-                            for (var c = 0; c < closeAllCategories.length; c++) {
-                                closeAllCategories[c]();
-                            }
                             openMe();
                         }
-
                         addTreeRow(instName, function() {
                             last_inst_path.set(modeName + "/" + categoryName + "/" + instName);
                             current_instrument.set(instName);
@@ -197,8 +178,6 @@ function renderTrueInstrumentTree(container) {
                     })(categoryData[i]);
                 }
             } else {
-                // Cas particulier : Imbrication par tonalités (ex: MELODISTES)
-                // Extraction et tri des clés selon la suite des quartes
                 var sortedSubKeys = Object.keys(categoryData).sort(function(a, b) {
                     var indexA = QUARTES_ORDER.indexOf(a);
                     var indexB = QUARTES_ORDER.indexOf(b);
@@ -211,7 +190,6 @@ function renderTrueInstrumentTree(container) {
                     var subKey = sortedSubKeys[k];
                     
                     (function(tonaliteName, subInstruments) {
-                        // Ligne de la sous-catégorie (Tonalité)
                         var subRow = document.createElement("div");
                         subRow.style.backgroundColor = "#1f1f1f";
                         subRow.style.color = "#FFF";
@@ -219,15 +197,14 @@ function renderTrueInstrumentTree(container) {
                         subRow.style.borderBottom = "1px solid #333";
                         subRow.style.cursor = "pointer";
                         subRow.style.fontWeight = "500";
+                        subRow.style.whiteSpace = "nowrap";
                         subRow.innerText = tonaliteName;
                         branchDiv.appendChild(subRow);
 
-                        // Conteneur pour les instruments de cette tonalité
                         var subBranchDiv = document.createElement("div");
                         subBranchDiv.style.display = "none"; 
                         branchDiv.appendChild(subBranchDiv);
 
-                        // Fonctions internes pour ouvrir/fermer cette tonalité spécifique
                         var openSub = function() {
                             subBranchDiv.style.display = "block";
                             subRow.style.color = "#f1c40f"; 
@@ -240,47 +217,38 @@ function renderTrueInstrumentTree(container) {
 
                         closeAllTonalites.push(closeSub);
 
-                        // Gestion du clic pour la tonalité (Accordéon Strict au sein de la catégorie)
+                        if (activeOpenedTonalite === tonaliteName) {
+                            openSub();
+                        }
+
                         subRow.onclick = function(e) {
-                            e.stopPropagation(); // Évite de trigger le clic de la catégorie parente
+                            e.stopPropagation(); 
                             if (subBranchDiv.style.display === "none") {
-                                // On ferme toutes les autres tonalités ouvertes
                                 for (var t = 0; t < closeAllTonalites.length; t++) {
                                     closeAllTonalites[t]();
                                 }
                                 openSub();
                             } else {
                                 closeSub();
-                                activeOpenedTonalite = null;
+                                if (activeOpenedTonalite === tonaliteName) {
+                                    activeOpenedTonalite = null;
+                                }
                             }
                         };
 
-                        // Insertion des instruments sous la tonalité
                         for (var j = 0; j < subInstruments.length; j++) {
                             (function(instName) {
                                 var isSelected = (instName === selectedInstrument);
-                                
-                                // Si l'instrument est celui sélectionné actuellement, on force l'ouverture
                                 if (isSelected) {
-                                    // 1. Ouvrir la catégorie principale
-                                    for (var c = 0; c < closeAllCategories.length; c++) {
-                                        closeAllCategories[c]();
-                                    }
                                     openMe();
-                                    
-                                    // 2. Ouvrir la sous-catégorie de tonalité
-                                    for (var t = 0; t < closeAllTonalites.length; t++) {
-                                        closeAllTonalites[t]();
-                                    }
                                     openSub();
                                 }
-
                                 addTreeRow(instName, function() {
                                     last_inst_path.set(modeName + "/" + categoryName + "/" + tonaliteName + "/" + instName);
                                     current_instrument.set(instName);
                                     closeTreeView();
                                 }, isSelected, subBranchDiv, 55);
-                            })(subInstruments[j]);
+                            })(subInstruments[j]); // <-- CORRIGÉ : On passe le bon instrument au scope isolé
                         }
                     })(subKey, categoryData[subKey]);
                 }
@@ -291,55 +259,120 @@ function renderTrueInstrumentTree(container) {
 }
 
 function renderTrackTree(tree, basePath, container) {
-    container.innerHTML = ""; // On vide le conteneur avant le rendu pour éviter les cumuls de dossiers parents
-
-    // Ajout du bouton de retour si on se trouve dans un sous-dossier
-    if (basePath) {
-        var lastSlash = basePath.lastIndexOf("/");
-        var parentPath = "";
-        if (lastSlash !== -1) {
-            parentPath = basePath.substring(0, lastSlash);
-        }
-        addTreeRow("📁 .. [Retour]", function() {
-            loadView('tracks', parentPath);
-        }, false, container, 15);
-    }
-
-    var folders = {};
+    container.innerHTML = "";
     var lastLoc = track_location.get();
+
+    var rootJson = { _tracks: [], _subfolders: {} };
 
     for (var i = 0; i < tree.length; i++) {
         var item = tree[i];
-        var loc = item.location;
-        if (basePath && loc.indexOf(basePath + "/") !== 0) continue;
-        var relative = basePath ? loc.substring(basePath.length + 1) : loc;
-        var parts = relative.split("/");
-        var segment = parts[0];
-
-        if (parts.length > 1) {
-            if (!folders[segment]) {
-                var fullPath = (basePath ? basePath + "/" : "") + segment;
-                var depth = loc.split("/").length - fullPath.split("/").length;
-                folders[segment] = { icon: (depth === 1 ? "📘 " : "🗄️ "), path: fullPath };
+        var loc = item.location || "";
+        var parts = loc.split("/");
+        
+        var currentFolder = rootJson;
+        for (var p = 0; p < parts.length; p++) {
+            var part = parts[p];
+            if (p === parts.length - 1) {
+                currentFolder._tracks.push(item);
+            } else {
+                if (!currentFolder._subfolders[part]) {
+                    currentFolder._subfolders[part] = { _tracks: [], _subfolders: {} };
+                }
+                currentFolder = currentFolder._subfolders[part];
             }
-        } else {
-            (function(track) {
-                var isSelected = (track.location === lastLoc);
-                addTreeRow(track.title, function(){ 
-                    track_location.set(track.location);
-                    if (typeof updateServerTrack === "function") updateServerTrack(track.location);
-                    closeTreeView(); 
-                }, isSelected, container, 15); 
-            })(item);
         }
     }
 
-    for (var f in folders) {
-        (function(name, info) {
-            var label = name.replace(/([A-Z])/g, ' $1').replace(/^./, function(str){ return str.toUpperCase(); }).trim();
-            addTreeRow(info.icon + label, function() { loadView('tracks', info.path); }, false, container, 15);
-        })(f, folders[f]);
+    var closeFunctionsByDepth = [];
+
+    function buildHtmlTree(folderData, currentContainer, padding, currentPathParts) {
+        var depth = currentPathParts.length + 1;
+
+        if (!closeFunctionsByDepth[depth]) {
+            closeFunctionsByDepth[depth] = [];
+        }
+
+        for (var folderName in folderData._subfolders) {
+            if (!folderData._subfolders.hasOwnProperty(folderName)) continue;
+
+            (function(name, subData) {
+                var nextPathParts = currentPathParts.concat([name]);
+                var folderFullPath = nextPathParts.join("/");
+                var labelName = name.replace(/([A-Z])/g, ' $1').replace(/^./, function(str){ return str.toUpperCase(); }).trim();
+
+                var folderRow = document.createElement("div");
+                folderRow.style.backgroundColor = padding === 15 ? "#2a2a2a" : "#1f1f1f";
+                folderRow.style.borderBottom = "1px solid #333";
+                folderRow.style.color = padding === 15 ? "#f1c40f" : "#FFF";
+                folderRow.style.fontWeight = padding === 15 ? "bold" : "500";
+                folderRow.style.padding = "12px 15px";
+                folderRow.style.paddingLeft = padding + "px";
+                folderRow.style.cursor = "pointer";
+                folderRow.style.fontSize = "16px";
+                folderRow.style.whiteSpace = "nowrap";
+                
+                var icon = (depth === 1) ? "📁 " : (depth === 2 ? "📘 " : "🗄️ ");
+                folderRow.innerText = icon + labelName;
+                currentContainer.appendChild(folderRow);
+
+                var branchDiv = document.createElement("div");
+                branchDiv.style.display = "none";
+                currentContainer.appendChild(branchDiv);
+
+                var openFolder = function() {
+                    branchDiv.style.display = "block";
+                    if (depth === 1) folderRow.innerText = "📂 " + labelName;
+                };
+                var closeFolder = function() {
+                    branchDiv.style.display = "none";
+                    if (depth === 1) folderRow.innerText = "📁 " + labelName;
+                };
+
+                closeFunctionsByDepth[depth].push(closeFolder);
+
+                folderRow.onclick = function(e) {
+                    e.stopPropagation();
+                    if (branchDiv.style.display === "none") {
+                        var siblingsClose = closeFunctionsByDepth[depth];
+                        for (var s = 0; s < siblingsClose.length; s++) {
+                            siblingsClose[s]();
+                        }
+                        openFolder();
+                    } else {
+                        closeFolder();
+                    }
+                };
+
+                buildHtmlTree(subData, branchDiv, padding + 20, nextPathParts);
+
+                if (lastLoc && lastLoc.indexOf(folderFullPath + "/") === 0) {
+                    openFolder();
+                }
+
+            })(folderName, folderData._subfolders[folderName]);
+        }
+
+        for (var t = 0; t < folderData._tracks.length; t++) {
+            (function(track) {
+                var isSelected = (track.location === lastLoc);
+                addTreeRow(track.title, function() { 
+                    track_location.set(track.location);
+                    
+                    if (typeof current_page !== "undefined" && current_page.set) {
+                        current_page.set(1);
+                    }
+                    
+                    if (typeof updateServerTrack === "function") {
+                        updateServerTrack(track.location);
+                    }
+                    closeTreeView(); 
+                }, isSelected, currentContainer, padding);
+            })(folderData._tracks[t]);
+        }
     }
+
+    buildHtmlTree(rootJson, container, 15, []);
+
     if (typeof checkSync === "function") checkSync(); 
 }
 
@@ -351,10 +384,18 @@ function closeTreeView() {
     if (popupContent) popupContent.innerHTML = ""; 
     
     document.body.classList.remove('tree-open');
+    document.body.classList.remove('tree-instruments-open');
     document.body.className = ""; 
     
-    if (typeof checkUpdateScore === "function") {
+    var menuOverlay = document.getElementById('menu-popup-overlay');
+    if (menuOverlay) menuOverlay.style.display = 'none';
+    
+    if (typeof updateScoreView === "function") {
+        updateScoreView();
+    } else if (typeof checkUpdateScore === "function") {
         checkUpdateScore();
+    } else if (typeof loadScore === "function") {
+        loadScore();
     }
     
     if (typeof startPooling === "function") startPooling(); 
