@@ -354,8 +354,10 @@ def get_score():
         return send_file(path)
     return "Aucun fichier trouvé", 404
 
-@app.route('/audio_command', methods=['POST'])
+@app.route('/audio_command', methods=['POST', 'OPTIONS'])
 def audio_command():
+    if request.method == 'OPTIONS':
+        return 'ok', 200
     print(f"{get_cid()}?")
     cmd = request.data
     udp_socket.sendto(cmd, PLAYER_ADDR)
@@ -411,6 +413,33 @@ def admin_refresh():
     except Exception as e:
         print("Exception générale levée dans Flask lors du refresh :", str(e))
         return jsonify({"success": False, "message": f"Erreur système interne : {str(e)}"}), 500
+
+@app.route('/api/admin/save_mp3_types', methods=['POST'])
+def save_mp3_types():
+    """Reçoit la liste ordonnée des priorités MP3 depuis l'interface admin et l'enregistre"""
+    try:
+        priorities = request.json
+        if not isinstance(priorities, list):
+            return jsonify({"status": "error", "message": "Format de données invalide (un tableau est attendu)."}), 400
+        
+        # Création du dossier server_data s'il n'existe pas encore
+        os.makedirs(DATA_DIR, exist_ok=True)
+        
+        file_path = os.path.join(DATA_DIR, 'mp3_types.json')
+        with open(file_path, 'w', encoding='utf-8') as f:
+            json.dump(priorities, f, indent=4, ensure_ascii=False)
+            
+        try:
+            os.sync()  # Sécurité pour l'écriture sur Raspberry Pi / carte SD
+        except AttributeError:
+            pass
+            
+        print(f"[Admin] Priorités MP3 mises à jour avec succès dans {file_path}")
+        return jsonify({"status": "success", "message": "Priorités sauvegardées."}), 200
+
+    except Exception as e:
+        print(f"Erreur lors de l'enregistrement des priorités MP3 : {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/api/admin/crud', methods=['POST'])
 def admin_crud():

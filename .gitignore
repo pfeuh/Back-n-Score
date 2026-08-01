@@ -6,3 +6,5 @@ server_data/db_tracks.json
 server_data/meta_instruments.json
 server_data/ui_classy.json
 server_data/ui_popular.json
+server_data/mp3_types.json
+server_data/*.txt

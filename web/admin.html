@@ -14,6 +14,7 @@
             --move-color: #9c27b0;
             --danger-color: #b00020;
             --selected-bg: #2a3a40;
+            --priority-color: #ffb400;
         }
 
         body {
@@ -49,10 +50,10 @@
         }
         .btn-move { background-color: var(--move-color); }
         .btn-danger { background-color: var(--danger-color); }
+        .btn-priority { background-color: var(--priority-color); color: #121212; }
         .btn-secondary { background-color: var(--accent-color); color: var(--text-color); }
         .btn:disabled { background-color: #555; cursor: not-allowed; }
 
-        /* Groupe Input + Bouton d'exploration */
         .input-browse-group {
             display: flex;
             gap: 4px;
@@ -78,6 +79,7 @@
         }
         .crud-card.card-move { border-left-color: var(--move-color); }
         .crud-card.card-delete { border-left-color: var(--danger-color); }
+        .crud-card.card-priority { border-left-color: var(--priority-color); }
 
         .crud-title {
             margin: 0 0 8px 0;
@@ -114,7 +116,54 @@
             margin-top: 6px;
         }
 
-        /* FENÊTRE MODALE (POP-UP) POUR L'ARBRE */
+        /* Zone d'ordonnancement graphique */
+        .priority-tree-container {
+            background-color: #181818;
+            border: 1px solid var(--accent-color);
+            border-radius: 4px;
+            padding: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+        }
+
+        .priority-tree-container ul { list-style-type: none; padding-left: 20px; margin: 0; }
+        .priority-tree-container li { margin: 4px 0; }
+        
+        .priority-row {
+            display: inline-flex;
+            align-items: center;
+            background-color: #222;
+            padding: 4px 8px;
+            border-radius: 4px;
+            gap: 10px;
+            min-width: 280px;
+            justify-content: space-between;
+            border: 1px solid #333;
+        }
+        
+        .priority-label {
+            font-size: 0.85rem;
+        }
+        .folder-item { color: #ffb400; font-weight: bold; }
+        .track-item { color: #ffffff; }
+
+        .arrow-controls {
+            display: flex;
+            gap: 2px;
+        }
+        .btn-arrow {
+            background-color: #333;
+            color: #ccc;
+            border: 1px solid #444;
+            padding: 2px 6px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            border-radius: 3px;
+        }
+        .btn-arrow:hover { background-color: #444; color: white; }
+
+        /* FENÊTRE MODALE POUR L'ARBRE DE SELECTION */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -156,72 +205,30 @@
         .modal-body ul { list-style-type: none; padding-left: 15px; margin: 0; }
         .modal-body li { margin: 6px 0; position: relative; }
         
-        /* Conteneur de ligne pour aligner proprement la flèche et la zone sélectionnable */
-        .tree-row {
-            display: inline-flex;
-            align-items: center;
-            gap: 2px;
-        }
-
-        .selectable-path { 
-            cursor: pointer; 
-            padding: 4px 8px; 
-            border-radius: 4px; 
-            display: inline-block;
-        }
+        .tree-row { display: inline-flex; align-items: center; gap: 2px; }
+        .selectable-path { cursor: pointer; padding: 4px 8px; border-radius: 4px; display: inline-block; }
         .selectable-path:hover { background-color: var(--accent-color); }
-        
-        /* Style pour l'élément actuellement sélectionné dans la modale */
-        .selectable-path.active-selection {
-            background-color: var(--selected-bg) !important;
-            outline: 1px solid var(--primary-color);
-        }
+        .selectable-path.active-selection { background-color: var(--selected-bg) !important; outline: 1px solid var(--primary-color); }
 
         .folder-node { color: #ffb400; font-weight: bold; }
         .track-node { color: #ffffff; }
 
-        /* Flèche d'état pour les dossiers rétractables */
         .folder-toggle {
-            cursor: pointer;
-            font-size: 0.75rem;
-            display: inline-block;
-            width: 20px;
-            height: 24px;
-            line-height: 24px;
-            text-align: center;
-            color: #888;
-            transition: transform 0.2s;
-            user-select: none;
+            cursor: pointer; font-size: 0.75rem; display: inline-block; width: 20px;
+            height: 24px; line-height: 24px; text-align: center; color: #888;
+            transition: transform 0.2s; user-select: none;
         }
         .folder-toggle:hover { color: white; }
-        
-        /* Espaceur pour aligner les morceaux (qui n'ont pas de flèche) avec les dossiers */
-        .track-spacer {
-            display: inline-block;
-            width: 20px;
-        }
+        .track-spacer { display: inline-block; width: 20px; }
 
-        /* Gestion CSS de l'ouverture/fermeture des branches */
-        .folder-branch > ul {
-            display: none;
-        }
-        .folder-branch.expanded > ul {
-            display: block;
-        }
-        .folder-branch.expanded > .tree-row > .folder-toggle {
-            transform: rotate(90deg);
-        }
+        .folder-branch > ul { display: none; }
+        .folder-branch.expanded > ul { display: block; }
+        .folder-branch.expanded > .tree-row > .folder-toggle { transform: rotate(90deg); }
 
-        /* Pied de la modale contenant les boutons de validation */
         .modal-footer {
-            padding: 10px;
-            border-top: 1px solid var(--accent-color);
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            background-color: #151515;
-            border-bottom-left-radius: 6px;
-            border-bottom-right-radius: 6px;
+            padding: 10px; border-top: 1px solid var(--accent-color);
+            display: flex; justify-content: flex-end; gap: 10px;
+            background-color: #151515; border-bottom-left-radius: 6px; border-bottom-right-radius: 6px;
         }
     </style>
 </head>
@@ -235,6 +242,24 @@
     </header>
 
     <main class="crud-container">
+        
+        <section class="crud-card card-priority">
+            <div class="crud-title" style="color: var(--priority-color);">🔢 Structure & Priorités (mp3_types.json)</div>
+            <p style="font-size: 0.8rem; color: #aaa; margin: 0 0 10px 0;">
+                Modifiez l'ordre de priorité des dossiers et morceaux graphiquement à l'aide des flèches, puis sauvegardez la configuration globale.
+            </p>
+            <div class="action-zone" style="justify-content: flex-start; margin-bottom: 10px;">
+                <button class="btn btn-priority" style="background-color: var(--accent-color); color: white; margin-right: 5px;" onclick="loadPriorityTree()">📥 Charger la configuration</button>
+            </div>
+            
+            <div id="priority-tree-zone" class="priority-tree-container">
+                <p style="color: #666; font-style: italic; margin: 0;">Aucune configuration chargée. Cliquez sur Charger.</p>
+            </div>
+
+            <div class="action-zone">
+                <button id="btn-save-priority" class="btn btn-priority" onclick="actionSavePriority()" disabled>💾 Sauvegarder l'ordre des priorités</button>
+            </div>
+        </section>
             
         <section class="crud-card">
             <div class="crud-title" style="color: var(--primary-color);">➕ Ajouter un morceau</div>
@@ -334,13 +359,15 @@
     <script>
         var API_REFRESH_URL = '/api/admin/refresh';
         var API_TREE_URL = '/server_data/db_tracks.json';
+        var API_CONFIG_URL = '/server_data/mp3_types.json'; 
         var API_CRUD_URL = '/api/admin/crud';
+        var API_SAVE_PRIORITIES_URL = '/api/admin/save_mp3_types';
 
         var activeTargetInputId = null;
         var foldersOnlyMode = false;
         var cachedRawData = null;
-        
         var currentPendingSelection = null; 
+        var loadedPriorityData = null;
 
         function makeRequest(method, url, dataToSend, callback) {
             var xhr = new XMLHttpRequest();
@@ -359,6 +386,149 @@
             };
             xhr.send(dataToSend ? JSON.stringify(dataToSend) : null);
         }
+
+        function loadPriorityTree() {
+            var zone = document.getElementById('priority-tree-zone');
+            zone.innerHTML = "<p style='color: #888; margin: 0;'>Chargement du fichier mp3_types.json...</p>";
+            
+            makeRequest('GET', API_CONFIG_URL, null, function(err, data) {
+                if (err || !data) {
+                    zone.innerHTML = "<p style='color: var(--danger-color); margin: 0;'>Impossible de lire mp3_types.json.</p>";
+                    return;
+                }
+                loadedPriorityData = data;
+                renderPriorityDOM();
+                document.getElementById('btn-save-priority').disabled = false;
+            });
+        }
+
+        function renderPriorityDOM() {
+            var zone = document.getElementById('priority-tree-zone');
+            zone.innerHTML = "";
+            if (!loadedPriorityData || loadedPriorityData.length === 0) {
+                zone.innerHTML = "<p style='color: #666; font-style: italic; margin:0;'>Configuration vide.</p>";
+                return;
+            }
+            zone.appendChild(buildPriorityLevelDOM(loadedPriorityData));
+        }
+
+        function buildPriorityLevelDOM(items) {
+            var ul = document.createElement('ul');
+            
+            var _loop = function(i) {
+                var item = items[i];
+                var li = document.createElement('li');
+                
+                var row = document.createElement('div');
+                row.className = "priority-row";
+                
+                var label = document.createElement('span');
+                var isObject = (item !== null && typeof item === 'object');
+                var itemType = (isObject && item.type === 'folder') ? 'folder' : 'track';
+                var itemText = isObject ? (item.title || item.name) : item;
+                
+                label.className = "priority-label " + (itemType === 'folder' ? 'folder-item' : 'track-item');
+                label.innerHTML = (itemType === 'folder' ? '📁 ' : '🎵 ') + itemText;
+                row.appendChild(label);
+                
+                var controls = document.createElement('div');
+                controls.className = "arrow-controls";
+                
+                var upBtn = document.createElement('button');
+                upBtn.className = "btn-arrow";
+                upBtn.innerHTML = "▲";
+                upBtn.onclick = function() { 
+                    var currentIndex = items.indexOf(item);
+                    if (currentIndex !== -1) moveItemInArray(items, currentIndex, -1); 
+                };
+                
+                var downBtn = document.createElement('button');
+                downBtn.className = "btn-arrow";
+                downBtn.innerHTML = "▼";
+                downBtn.onclick = function() { 
+                    var currentIndex = items.indexOf(item);
+                    if (currentIndex !== -1) moveItemInArray(items, currentIndex, 1); 
+                };
+                
+                controls.appendChild(upBtn);
+                controls.appendChild(downBtn);
+                row.appendChild(controls);
+                li.appendChild(row);
+                
+                if (isObject && item.type === 'folder' && item.children && item.children.length > 0) {
+                    li.appendChild(buildPriorityLevelDOM(item.children));
+                }
+                
+                ul.appendChild(li);
+            };
+
+            for (var i = 0; i < items.length; i++) {
+                _loop(i);
+            }
+            return ul;
+        }
+
+        function moveItemInArray(array, index, direction) {
+            var targetIndex = index + direction;
+            if (targetIndex < 0 || targetIndex >= array.length) return;
+            
+            var temp = array[index];
+            array[index] = array[targetIndex];
+            array[targetIndex] = temp;
+            
+            renderPriorityDOM();
+        }
+
+        function sanitizePriorityData(items) {
+            var cleanArray = [];
+            for (var i = 0; i < items.length; i++) {
+                var item = items[i];
+                if (item !== null && typeof item === 'object') {
+                    if (item.type === 'folder') {
+                        var folderName = item.name || item.title || "";
+                        var cleanFolder = {
+                            type: 'folder',
+                            name: folderName,
+                            title: folderName,
+                            children: item.children ? sanitizePriorityData(item.children) : []
+                        };
+                        cleanArray.push(cleanFolder);
+                    } else {
+                        var trackName = item.title || item.name || "";
+                        cleanArray.push(trackName);
+                    }
+                } else if (typeof item === 'string') {
+                    cleanArray.push(item);
+                }
+            }
+            return cleanArray;
+        }
+
+        function actionSavePriority() {
+            if (!loadedPriorityData) return;
+            
+            var cleanedConfigData = sanitizePriorityData(loadedPriorityData);
+            console.log("Données nettoyées prêtes à l'envoi :", cleanedConfigData);
+            
+            var btnSave = document.getElementById('btn-save-priority');
+            btnSave.disabled = true;
+            btnSave.innerHTML = "⏳ Envoi...";
+
+            makeRequest('POST', API_SAVE_PRIORITIES_URL, cleanedConfigData, function(err, res) {
+                btnSave.disabled = false;
+                btnSave.innerHTML = "💾 Sauvegarder l'ordre des priorités";
+
+                if (!err && res && (res.status === "success" || res.success === true)) {
+                    alert("Succès : L'ordre de priorité global a été enregistré !");
+                    cachedRawData = null; 
+                } else {
+                    console.error("Détail de l'erreur serveur :", res);
+                    alert("Erreur lors de l'enregistrement des priorités : " + (res && res.message ? res.message : err));
+                }
+            });
+        }
+
+        /* --- EXPLORATEUR MODALE / PARSEURS EXISTANTS --- */
 
         function parseFlatListToTree(flatList) {
             var root = { name: "Root", type: "folder", path: "", children: [] };
@@ -541,7 +711,6 @@
                     return;
                 }
                 
-                // Traitement de la réponse structurée du script Python
                 if (data && (data.status === "success" || data.status === "warning")) {
                     var msg = "Indexation terminée !\n";
                     msg += "Morceaux indexés : " + data.tracks_count + "\n";
@@ -555,7 +724,7 @@
                         }
                     }
                     alert(msg);
-                    cachedRawData = null; // Force le rechargement de l'arbre au prochain clic
+                    cachedRawData = null;
                 } else {
                     alert("Erreur indéterminée renvoyée par le serveur.");
                 }
@@ -600,86 +769,19 @@
             var title = document.getElementById('create-title').value;
             if (!loc || !title) { alert("Champs manquants."); return; }
             
-            var cleanDirName = title.trim();
+            var cleanDirName = convertToCamelCase(title);
             var fullLocation = loc + '/' + cleanDirName;
 
             var params = { action: 'create', location: fullLocation, title: title };
-            alert("DEBUG - Requête [CREATE] prête :\n" + JSON.stringify(params, null, 4));
 
             makeRequest('POST', API_CRUD_URL, params, function(err, res) {
-                if (!err && res.status === "success") { 
-                    alert("Succès serveur : Morceau créé !");
-                    document.getElementById('create-title').value = "";
-                    document.getElementById('create-location').value = "";
+                if (!err && res && (res.status === "success" || res.success === true)) {
+                    alert("Succès : Le morceau a été créé !");
                     cachedRawData = null;
                 } else {
-                    alert("Erreur serveur lors de la création.");
+                    alert("Erreur lors de la création.");
                 }
             });
-        }
-
-        function actionMove() {
-            var loc = document.getElementById('move-location').value;
-            var newParentLoc = document.getElementById('move-new-location').value;
-            if (!loc || !newParentLoc) { alert("Champs manquants."); return; }
-
-            var parts = loc.split('/');
-            var elementName = parts[parts.length - 1];
-            var fullDestination = newParentLoc + '/' + elementName;
-
-            var params = { action: 'update', location: loc, new_location: fullDestination };
-            alert("DEBUG - Requête [MOVE] prête :\n" + JSON.stringify(params, null, 4));
-
-            makeRequest('POST', API_CRUD_URL, params, function(err, res) {
-                if (!err && res.status === "success") { 
-                    alert("Succès serveur : Élément déplacé !");
-                    document.getElementById('move-location').value = "";
-                    document.getElementById('move-new-location').value = "";
-                    cachedRawData = null;
-                } else {
-                    alert("Erreur serveur lors du déplacement.");
-                }
-            });
-        }
-
-        function actionUpdate() {
-            var loc = document.getElementById('update-location').value;
-            var newTitle = document.getElementById('update-title').value;
-            if (!loc || !newTitle) { alert("Champs manquants."); return; }
-
-            var params = { action: 'update', location: loc, new_title: newTitle };
-            alert("DEBUG - Requête [UPDATE TITLE] prête :\n" + JSON.stringify(params, null, 4));
-
-            makeRequest('POST', API_CRUD_URL, params, function(err, res) {
-                if (!err && res.status === "success") { 
-                    alert("Succès serveur : Titre et dossier mis à jour !");
-                    document.getElementById('update-title').value = "";
-                    document.getElementById('update-location').value = "";
-                    cachedRawData = null;
-                } else {
-                    alert("Erreur serveur lors de la mise à jour du titre.");
-                }
-            });
-        }
-
-        function actionDelete() {
-            var loc = document.getElementById('delete-location').value;
-            if (!loc) { alert("Indiquez un chemin."); return; }
-            
-            var params = { action: 'delete', location: loc };
-            alert("DEBUG - Requête [DELETE] prête :\n" + JSON.stringify(params, null, 4));
-
-            if (confirm("Supprimer définitivement :\n" + loc + " ?")) {
-                makeRequest('POST', API_CRUD_URL, params, function(err, res) {
-                    if (!err && res.status === "success") { 
-                        alert("Succès serveur : Élément supprimé !");
-                        document.getElementById('delete-location').value = "";
-                        cachedRawData = null;
-                    } else {
-                        alert("Erreur serveur lors de la suppression.");
-                    }
-                });
-            }
         }
     </script>
 </body>
