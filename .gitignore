@@ -8,3 +8,11 @@ server_data/ui_classy.json
 server_data/ui_popular.json
 server_data/mp3_types.json
 server_data/*.txt
+static/qrcode_lan.png
+static/qrcode_lan.png.txt
+static/qrcode_wifi.png
+static/qrcode_wifi.png.txt
+
+aucune modification n'a été ajoutée à la validation (utilisez "git add" ou "git commit -a")
+pfeuh@pfeuh-ESPRIMO-P910:/mnt/Data1/Documents/backNScore$ 
+

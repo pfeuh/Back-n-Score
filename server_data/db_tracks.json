@@ -696,6 +696,10 @@
         "location": "_methode/tromboneEcouterLireJouer_1/track_99"
     },
     {
+        "title": "Happy Birthday",
+        "location": "_vrac/divers/happyBirthday"
+    },
+    {
         "title": "Le parrain",
         "location": "_vrac/divers/leParrain"
     },
@@ -1588,6 +1592,10 @@
         "location": "bands/pierreFaller/aLAncienne"
     },
     {
+        "title": "A la Bireli",
+        "location": "bands/pierreFaller/aLaBireli"
+    },
+    {
         "title": "A la charrue",
         "location": "bands/pierreFaller/aLaCharrue"
     },
@@ -1690,10 +1698,6 @@
     {
         "title": "Cafette",
         "location": "bands/pierreFaller/cafette"
-    },
-    {
-        "title": "Cafette en SOLm",
-        "location": "bands/pierreFaller/cafetteEnSolm"
     },
     {
         "title": "Camel",
@@ -2210,10 +2214,6 @@
     {
         "title": "You have changed my mind",
         "location": "bands/pierreFaller/youHaveChangedMyMind"
-    },
-    {
-        "title": "à la Bireli",
-        "location": "bands/pierreFaller/aLaBireli"
     },
     {
         "title": "About a girl",
@@ -6798,10 +6798,6 @@
     {
         "title": "Duo des fleurs",
         "location": "styles/classic/duoDesFleurs"
-    },
-    {
-        "title": "Fraise Tagada!",
-        "location": "styles/classic/fraiseTagada"
     },
     {
         "title": "Gnossienne Un",
