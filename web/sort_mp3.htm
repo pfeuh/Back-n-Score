@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurateur BackNScore</title>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <style>
+        body { font-family: sans-serif; background: #1a1a1a; color: white; padding: 20px; }
+        #playlist { max-width: 500px; margin: 0 auto; background: #222; padding: 10px; border-radius: 8px; min-height: 50px; }
+        
+        .mp3-item {
+            background: #333;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            border: 1px solid #444;
+            touch-action: none;
+            cursor: move; /* Indique qu'on peut déplacer l'objet entier */
+            
+            /* Empêche le surlignage du texte pendant le drag */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .details { flex-grow: 1; }
+        .stem { font-weight: bold; }
+        .ghost { opacity: 0.4; background: #444; border: 1px dashed #fff; }
+    </style>
+</head>
+<body>
+
+    <h2 style="text-align: center;">Classement des MP3</h2>
+    
+    <div id="playlist">
+        <div class="mp3-item" data-filename="melody">
+    <div class="details">
+        <span class="stem">melody</span>
+    </div>
+</div>
+<div class="mp3-item" data-filename="backtrack">
+    <div class="details">
+        <span class="stem">backtrack</span>
+    </div>
+</div>
+<div class="mp3-item" data-filename="slow">
+    <div class="details">
+        <span class="stem">slow</span>
+    </div>
+</div>
+<div class="mp3-item" data-filename="noPiano">
+    <div class="details">
+        <span class="stem">noPiano</span>
+    </div>
+</div>
+<div class="mp3-item" data-filename="13:24">
+    <div class="details">
+        <span class="stem">13:24</span>
+    </div>
+</div>
+<div class="mp3-item" data-filename="17:20">
+    <div class="details">
+        <span class="stem">17:20</span>
+    </div>
+</div>
+<div class="mp3-item" data-filename="from:bridge">
+    <div class="details">
+        <span class="stem">from:bridge</span>
+    </div>
+</div>
+<div class="mp3-item" data-filename="from:interlude">
+    <div class="details">
+        <span class="stem">from:interlude</span>
+    </div>
+</div>
+<div class="mp3-item" data-filename="8:11">
+    <div class="details">
+        <span class="stem">8:11</span>
+    </div>
+</div>
+<div class="mp3-item" data-filename="17:24">
+    <div class="details">
+        <span class="stem">17:24</span>
+    </div>
+</div>
+<div class="mp3-item" data-filename="manouche">
+    <div class="details">
+        <span class="stem">manouche</span>
+    </div>
+</div>
+<div class="mp3-item" data-filename="1:6">
+    <div class="details">
+        <span class="stem">1:6</span>
+    </div>
+</div>
+<div class="mp3-item" data-filename="19:31">
+    <div class="details">
+        <span class="stem">19:31</span>
+    </div>
+</div>
+<div class="mp3-item" data-filename="16:24">
+    <div class="details">
+        <span class="stem">16:24</span>
+    </div>
+</div>
+<div class="mp3-item" data-filename="13:20">
+    <div class="details">
+        <span class="stem">13:20</span>
+    </div>
+</div>
+<div class="mp3-item" data-filename="1:4">
+    <div class="details">
+        <span class="stem">1:4</span>
+    </div>
+</div>
+<div class="mp3-item" data-filename="noSecondVoice">
+    <div class="details">
+        <span class="stem">noSecondVoice</span>
+    </div>
+</div>
+<div class="mp3-item" data-filename="noWindBass">
+    <div class="details">
+        <span class="stem">noWindBass</span>
+    </div>
+</div>
+<div class="mp3-item" data-filename="noDrum">
+    <div class="details">
+        <span class="stem">noDrum</span>
+    </div>
+</div>
+<div class="mp3-item" data-filename="noBass">
+    <div class="details">
+        <span class="stem">noBass</span>
+    </div>
+</div>
+<div class="mp3-item" data-filename="E:end">
+    <div class="details">
+        <span class="stem">E:end</span>
+    </div>
+</div>
+<div class="mp3-item" data-filename="B:end">
+    <div class="details">
+        <span class="stem">B:end</span>
+    </div>
+</div>
+<div class="mp3-item" data-filename="33:end">
+    <div class="details">
+        <span class="stem">33:end</span>
+    </div>
+</div>
+<div class="mp3-item" data-filename="17:end">
+    <div class="details">
+        <span class="stem">17:end</span>
+    </div>
+</div>
+<div class="mp3-item" data-filename="chorus:5">
+    <div class="details">
+        <span class="stem">chorus:5</span>
+    </div>
+</div>
+<div class="mp3-item" data-filename="chorus:3">
+    <div class="details">
+        <span class="stem">chorus:3</span>
+    </div>
+</div>
+<div class="mp3-item" data-filename="chorus:4">
+    <div class="details">
+        <span class="stem">chorus:4</span>
+    </div>
+</div>
+<div class="mp3-item" data-filename="45:48">
+    <div class="details">
+        <span class="stem">45:48</span>
+    </div>
+</div>
+<div class="mp3-item" data-filename="45:46">
+    <div class="details">
+        <span class="stem">45:46</span>
+    </div>
+</div>
+<div class="mp3-item" data-filename="45:56">
+    <div class="details">
+        <span class="stem">45:56</span>
+    </div>
+</div>
+<div class="mp3-item" data-filename="45:52">
+    <div class="details">
+        <span class="stem">45:52</span>
+    </div>
+</div>
+<div class="mp3-item" data-filename="17:56">
+    <div class="details">
+        <span class="stem">17:56</span>
+    </div>
+</div>
+    </div>
+
+    <div style="text-align: center; margin-top: 20px;">
+        <button onclick="saveNewOrder()" style="padding: 10px 20px; cursor: pointer;">Sauvegarder l'ordre</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const el = document.getElementById('playlist');
+            
+            if (el) {
+                new Sortable(el, {
+                    animation: 150,
+                    ghostClass: 'ghost',
+                    // On a enlevé la ligne "handle" : on peut cliquer n'importe où
+                    forceFallback: true, 
+                    onEnd: function() {
+                        console.log("Nouvel ordre calculé.");
+                    }
+                });
+            }
+        });
+
+        function saveNewOrder() {
+            const items = document.querySelectorAll('#playlist .mp3-item');
+            const currentOrder = Array.from(items).map(item => item.dataset.filename);
+            console.log("Ordre actuel :", currentOrder);
+            alert("Ordre prêt en console.");
+        }
+    </script>
+</body>
+</html>

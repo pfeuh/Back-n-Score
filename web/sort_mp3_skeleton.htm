@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurateur BackNScore</title>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <style>
+        body { font-family: sans-serif; background: #1a1a1a; color: white; padding: 20px; }
+        #playlist { max-width: 500px; margin: 0 auto; background: #222; padding: 10px; border-radius: 8px; min-height: 50px; }
+        
+        .mp3-item {
+            background: #333;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            border: 1px solid #444;
+            touch-action: none;
+            cursor: move; /* Indique qu'on peut déplacer l'objet entier */
+            
+            /* Empêche le surlignage du texte pendant le drag */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .details { flex-grow: 1; }
+        .stem { font-weight: bold; }
+        .ghost { opacity: 0.4; background: #444; border: 1px dashed #fff; }
+    </style>
+</head>
+<body>
+
+    <h2 style="text-align: center;">Classement des MP3</h2>
+    
+    <div id="playlist">
+        #MP3_TYPES#
+    </div>
+
+    <div style="text-align: center; margin-top: 20px;">
+        <button onclick="saveNewOrder()" style="padding: 10px 20px; cursor: pointer;">Sauvegarder l'ordre</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const el = document.getElementById('playlist');
+            
+            if (el) {
+                new Sortable(el, {
+                    animation: 150,
+                    ghostClass: 'ghost',
+                    // On a enlevé la ligne "handle" : on peut cliquer n'importe où
+                    forceFallback: true, 
+                    onEnd: function() {
+                        console.log("Nouvel ordre calculé.");
+                    }
+                });
+            }
+        });
+
+        function saveNewOrder() {
+            const items = document.querySelectorAll('#playlist .mp3-item');
+            const currentOrder = Array.from(items).map(item => item.dataset.filename);
+            console.log("Ordre actuel :", currentOrder);
+            alert("Ordre prêt en console.");
+        }
+    </script>
+</body>
+</html>

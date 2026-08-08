@@ -276,6 +276,10 @@ def home():
 def audio(): 
     return send_from_directory(WEB_DIR, 'audio.html')
 
+@app.route('/keyboard')
+def keyboard(): 
+    return send_from_directory(WEB_DIR, 'keyboard.html')
+
 @app.route('/selector')
 def selector(): 
     return send_from_directory(WEB_DIR, 'selector.html')
