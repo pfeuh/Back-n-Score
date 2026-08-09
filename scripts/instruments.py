@@ -33,7 +33,7 @@ INSTRUMENTS = {
 "horn_baryton_do": ("DO","SOL","-1","CUIVRES"),
 "horn_baryton_do_keyF": ("DO","FA","-1","CUIVRES"),
 "horn_baryton_keyF": ("SIb","FA","-1","CUIVRES"),
-"baryton": ("SIb","SOL","-1","CUIVRES"),
+#"baryton": ("SIb","SOL","-1","CUIVRES"), # fausse bonne idée, nest jamais present c'est toujours horn_baryton
 "euphonium": ("SIb","SOL","-1","CUIVRES"),
 "euphonium_keyF": ("SIb","FA","-1","CUIVRES"),
 "euphonium_do_keyG": ("DO","SOL","-1","CUIVRES"),
@@ -182,20 +182,25 @@ GROUP_POMPE = ("guitare", "banjo_4_cordes", "piano", "synthesiseur", "accordeon"
 
 def getFirstVoice(instrument):
     """ [easy]instrument_name[voice][solo] """
-    # 1. Préfixe
+    # 1. Préfixe easy
     if instrument.startswith("easy") and len(instrument) > 4:
         instrument = instrument[4:]
     
-    # 2. Suffixe Solo
+    # 2. Suffixe solo
     if instrument.endswith("solo") and len(instrument) > 4:
         instrument = instrument[:-4]
     
     # 3. Suffixe Voix
-    if instrument and instrument[-1] in "234":
-        instrument = instrument[:-1]
-        
+    if instrument and instrument[-1].isdigit():
+        digit = instrument[-1]
+        if digit == '1':
+            # On interdit explicitement le chiffre 1 (ex: sax_alto1)
+            return None 
+        elif digit in "23456789":
+            instrument = instrument[:-1]
+            
     return instrument
-
+    
 def isKnownInstrument(name):
     # Ici, on ne rappelle pas getFirstVoice car c'est le rôle de l'appelant 
     # de savoir ce qu'il veut tester (la racine ou le nom complet).

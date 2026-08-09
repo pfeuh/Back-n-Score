@@ -142,19 +142,60 @@ def generate_track_tree():
         if "trackname.txt" in files:
             relative_path = os.path.relpath(root, DATABASE_DIR)
             
-            # Balayage des fichiers pour l'indexation
+            # Recensement de tous les noms de base des PDF valides présents dans ce dossier
+            valid_pdf_bases = {f[:-4] for f in files if f.endswith(".pdf")}
+
+            # Nettoyage automatique des images orphelines (dont le PDF n'existe plus ou a été renommé)
+            for f in files:
+                if f.endswith(".jpg") and "_p" in f:
+                    img_instr = f.split("_p")[0]
+                    if img_instr not in valid_pdf_bases:
+                        try:
+                            os.remove(os.path.join(root, f))
+                            if VERBOSE:
+                                print(f"Image orpheline purgée : {os.path.join(relative_path, f)}")
+                        except Exception:
+                            pass
+
+            # Balayage des fichiers pour l'indexation et la conversion
             for f in files:
                 # --- TRAITEMENT DES PARTITIONS PDF ---
                 if f.endswith(".pdf"):
-                    if VERBOSE:
-                        print(f)
                     instr_key = f[:-4]
                     
                     try:
                         checkTrack(instr_key, relative_path)
                         pdf_full_path = os.path.join(root, f)
-                        if trackPdfToJpg(pdf_full_path):
-                            converted_count += 1
+                        
+                        # Vérification intelligente : on ne convertit que si la première image exacte n'existe pas 
+                        # ou si le PDF a été modifié plus récemment.
+                        first_img_path = os.path.join(root, f"{instr_key}_p1.jpg")
+                        needs_conversion = False
+                        
+                        if not os.path.exists(first_img_path):
+                            needs_conversion = True
+                        else:
+                            if os.path.getmtime(pdf_full_path) > os.path.getmtime(first_img_path):
+                                needs_conversion = True
+                                # Nettoyage des anciennes pages de ce PDF spécifique s'il a été mis à jour
+                                page = 1
+                                while True:
+                                    old_img_path = os.path.join(root, f"{instr_key}_p{page}.jpg")
+                                    if os.path.exists(old_img_path):
+                                        try:
+                                            os.remove(old_img_path)
+                                            page += 1
+                                        except Exception:
+                                            break
+                                    else:
+                                        break
+
+                        if needs_conversion:
+                            print(f"[>] Conversion : {os.path.join(relative_path, f)}")
+                            if trackPdfToJpg(pdf_full_path):
+                                converted_count += 1
+                        elif VERBOSE:
+                            print(f)
                             
                     except Exception as err:
                         categorized_errors["INSTRUMENTS"].append(f"{relative_path}/{f} -> {str(err)}")

@@ -330,3 +330,12 @@ body.tree-open #menu-bar {
 .btn-ok:active {
     background-color: #d4ac0d;
 }
+
+/* --- STYLE BOUTON ALT --- */
+.btn-alt {
+    background-color: #d35400; /* Orange distinctif pour l'alternative locale */
+}
+
+.btn-alt:hover, .btn-alt:focus {
+    border-color: #f39c12;
+}

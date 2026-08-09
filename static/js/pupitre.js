@@ -7,6 +7,7 @@ var DATA_UI_POPULAR = null;           // supposed to be a constant
 var DATA_UI_CLASSIQUE = null;         // supposed to be a constant
 var MODE_POPULAR = 1;                 // supposed to be a constant
 var MODE_CLASSIQUE = 2;               // supposed to be a constant
+var META_INSTRUMENTS = null;
 
 var content = null;                   // the <div> which receives all trees and scores
 var mode_div = null;                   // the <div> which receives all trees and scores
@@ -136,13 +137,16 @@ function fetchData() {
             getJSON('/server_data/ui_classy.json', function(d3) {
                 DATA_UI_CLASSIQUE = d3;
                 
-                //~ console.log("Tout est prêt");
-                startApp();
+                getJSON('/server_data/meta_instruments.json', function(d4) {
+                    META_INSTRUMENTS = d4;
+                    
+                    //~ console.log("Tout est prêt");
+                    startApp();
+                });
             });
         });
     });
 }
-
 
 function setEasy(checked) {
     easy_toggle.set(checked);

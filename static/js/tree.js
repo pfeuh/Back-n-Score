@@ -13,6 +13,10 @@ function uiSelectTrack() {
     loadView('tracks', "");
 }
 
+function uiSelectAltInstrument() {
+    loadView('alt', "");
+}
+
 function prepareTreeInterface(viewType) {
     var popupContent = document.getElementById('tree-popup-content');
     popupContent.innerHTML = ""; 
@@ -61,7 +65,7 @@ function addTreeRow(text, onClick, isSelected, container, paddingLeft) {
     div.style.cursor = "pointer";
     div.style.color = "#FFFFFF";
     div.style.fontSize = "16px";
-    div.style.whiteSpace = "nowrap"; /* Empêche un texte long d'instrument de revenir à la ligne */
+    div.style.whiteSpace = "nowrap"; 
     
     var cleanText = text.replace(/_/g, " ");
     div.innerHTML = isSelected ? "<b>" + cleanText + "</b>" : cleanText;
@@ -88,9 +92,167 @@ function loadView(viewType, path) {
     
     if (viewType === 'tracks') {
         renderTrackTree(DATA_TRACKS, path, treeDiv);
+    } else if (viewType === 'alt') {
+        renderAltInstrumentTree(treeDiv);
     } else {
         renderTrueInstrumentTree(treeDiv);
     }
+}
+
+// Affichage des instruments du morceau courant regroupés par tonalité grâce à META_INSTRUMENTS
+// Affichage des instruments du morceau courant regroupés par tonalité grâce à META_INSTRUMENTS
+// Affichage des instruments du morceau courant regroupés par tonalité grâce à META_INSTRUMENTS
+function renderAltInstrumentTree(container) {
+    container.innerHTML = "";
+    document.body.classList.add('tree-instruments-open');
+
+    var selectedInstrument = typeof current_instrument !== "undefined" ? current_instrument.get() : "";
+
+    // Titre de section
+    var headerRow = document.createElement("div");
+    headerRow.style.backgroundColor = "#2a2a2a";
+    headerRow.style.borderBottom = "2px solid #444";
+    headerRow.style.color = "#f1c40f";
+    headerRow.style.fontWeight = "bold";
+    headerRow.style.padding = "14px 15px";
+    headerRow.style.fontSize = "16px";
+    headerRow.style.whiteSpace = "nowrap";
+    headerRow.innerText = "📁 Instruments du morceau";
+    container.appendChild(headerRow);
+
+    var branchDiv = document.createElement("div");
+    branchDiv.style.display = "block";
+    container.appendChild(branchDiv);
+
+    fetch('/get_available_instruments')
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(instruments) {
+            if (!instruments || instruments.length === 0) {
+                var emptyRow = document.createElement("div");
+                emptyRow.style.padding = "15px";
+                emptyRow.style.color = "#888";
+                emptyRow.innerText = "Aucun instrument trouvé pour ce morceau.";
+                branchDiv.appendChild(emptyRow);
+                return;
+            }
+
+            // Fonction utilitaire locale pour nettoyer le nom (gère easy, solo, chiffres de voix 2,3,4)
+            function getBaseInstrumentName(name) {
+                if (name.startsWith("easy") && name.length > 4) {
+                    name = name.substring(4);
+                }
+                if (name.endsWith("solo") && name.length > 4) {
+                    name = name.substring(0, name.length - 4);
+                }
+                if (name.length > 0 && "234".indexOf(name.charAt(name.length - 1)) !== -1) {
+                    name = name.substring(0, name.length - 1);
+                }
+                return name;
+            }
+
+            // Regroupement précis basé sur META_INSTRUMENTS en nettoyant le nom pour les variantes (2, solo, easy)
+            var grouped = {};
+            for (var i = 0; i < QUARTES_ORDER.length; i++) {
+                grouped[QUARTES_ORDER[i]] = [];
+            }
+            grouped["NP"] = [];
+            grouped["AUTRES"] = [];
+
+            for (var i = 0; i < instruments.length; i++) {
+                var instName = instruments[i];
+                var tona = "AUTRES";
+
+                // On teste d'abord le nom exact, puis le nom nettoyé (ex: clarinette2 -> clarinette)
+                var lookupName = instName;
+                if (typeof META_INSTRUMENTS !== "undefined") {
+                    if (!META_INSTRUMENTS[lookupName]) {
+                        lookupName = getBaseInstrumentName(instName);
+                    }
+                    if (META_INSTRUMENTS[lookupName]) {
+                        tona = META_INSTRUMENTS[lookupName][0]; // Indice 0 = tonalité
+                    }
+                }
+
+                if (!grouped[tona]) {
+                    grouped[tona] = [];
+                }
+                grouped[tona].push(instName);
+            }
+
+            var closeAllTonalites = [];
+            var allKeysToDisplay = QUARTES_ORDER.concat(["NP", "AUTRES"]);
+
+            for (var t = 0; t < allKeysToDisplay.length; t++) {
+                var tonaliteName = allKeysToDisplay[t];
+                var subInstruments = grouped[tonaliteName];
+                if (!subInstruments || subInstruments.length === 0) continue;
+
+                subInstruments.sort();
+
+                (function(tonName, listInsts) {
+                    var subRow = document.createElement("div");
+                    subRow.style.backgroundColor = "#1f1f1f";
+                    subRow.style.color = "#FFF";
+                    subRow.style.padding = "10px 10px 10px 30px";
+                    subRow.style.borderBottom = "1px solid #333";
+                    subRow.style.cursor = "pointer";
+                    subRow.style.fontWeight = "500";
+                    subRow.style.whiteSpace = "nowrap";
+                    subRow.innerText = "🎵 " + tonName + " (" + listInsts.length + ")";
+                    branchDiv.appendChild(subRow);
+
+                    var subBranchDiv = document.createElement("div");
+                    subBranchDiv.style.display = "none"; 
+                    branchDiv.appendChild(subBranchDiv);
+
+                    var openSub = function() {
+                        subBranchDiv.style.display = "block";
+                        subRow.style.color = "#f1c40f"; 
+                    };
+                    var closeSub = function() {
+                        subBranchDiv.style.display = "none";
+                        subRow.style.color = "#FFF";
+                    };
+
+                    closeAllTonalites.push(closeSub);
+
+                    // Vérifie si l'instrument actif se trouve dans cette tonalité pour ouvrir la branche automatiquement
+                    var containsSelected = listInsts.indexOf(selectedInstrument) !== -1;
+                    if (containsSelected) {
+                        openSub();
+                    }
+
+                    subRow.onclick = function(e) {
+                        e.stopPropagation(); 
+                        if (subBranchDiv.style.display === "none") {
+                            for (var s = 0; s < closeAllTonalites.length; s++) {
+                                closeAllTonalites[s]();
+                            }
+                            openSub();
+                        } else {
+                            closeSub();
+                        }
+                    };
+
+                    for (var j = 0; j < listInsts.length; j++) {
+                        (function(instName) {
+                            var isSelected = (instName === selectedInstrument);
+                            addTreeRow(instName, function() {
+                                if (typeof current_instrument !== "undefined" && current_instrument.set) {
+                                    current_instrument.set(instName);
+                                }
+                                closeTreeView();
+                            }, isSelected, subBranchDiv, 55);
+                        })(listInsts[j]);
+                    }
+                })(tonaliteName, subInstruments);
+            }
+        })
+        .catch(function(error) {
+            console.error("Erreur lors du chargement des instruments alternatifs :", error);
+        });
 }
 
 function renderTrueInstrumentTree(container) {
@@ -248,7 +410,7 @@ function renderTrueInstrumentTree(container) {
                                     current_instrument.set(instName);
                                     closeTreeView();
                                 }, isSelected, subBranchDiv, 55);
-                            })(subInstruments[j]); // <-- CORRIGÉ : On passe le bon instrument au scope isolé
+                            })(subInstruments[j]);
                         }
                     })(subKey, categoryData[subKey]);
                 }
