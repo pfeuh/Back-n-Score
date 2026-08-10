@@ -100,8 +100,6 @@ function loadView(viewType, path) {
 }
 
 // Affichage des instruments du morceau courant regroupés par tonalité grâce à META_INSTRUMENTS
-// Affichage des instruments du morceau courant regroupés par tonalité grâce à META_INSTRUMENTS
-// Affichage des instruments du morceau courant regroupés par tonalité grâce à META_INSTRUMENTS
 function renderAltInstrumentTree(container) {
     container.innerHTML = "";
     document.body.classList.add('tree-instruments-open');
@@ -240,6 +238,28 @@ function renderAltInstrumentTree(container) {
                         (function(instName) {
                             var isSelected = (instName === selectedInstrument);
                             addTreeRow(instName, function() {
+                                // Construction dynamique du chemin d'instrument pour last_inst_path
+                                var modeName = (typeof instru_select_mode !== "undefined" && instru_select_mode.get() == MODE_POPULAR) ? "POPULAR" : "CLASSIQUE";
+                                var categoryName = "AUTRES";
+                                var lookupName = instName;
+
+                                if (typeof META_INSTRUMENTS !== "undefined") {
+                                    if (!META_INSTRUMENTS[lookupName]) {
+                                        lookupName = getBaseInstrumentName(instName);
+                                    }
+                                    if (META_INSTRUMENTS[lookupName]) {
+                                        categoryName = META_INSTRUMENTS[lookupName][1] || "AUTRES"; // Indice 1 = catégorie (ex: BOIS)
+                                    }
+                                }
+
+                                if (typeof last_inst_path !== "undefined" && last_inst_path.set) {
+                                    if (tonName === "AUTRES" || tonName === "NP") {
+                                        last_inst_path.set(modeName + "/" + categoryName + "/" + instName);
+                                    } else {
+                                        last_inst_path.set(modeName + "/" + categoryName + "/" + tonName + "/" + instName);
+                                    }
+                                }
+
                                 if (typeof current_instrument !== "undefined" && current_instrument.set) {
                                     current_instrument.set(instName);
                                 }

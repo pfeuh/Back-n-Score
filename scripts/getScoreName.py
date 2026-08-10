@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import re
 from instruments import (INSTRUMENTS, VIRTUAL_INSTRUMENTS, TONALITES, MODE_POPULAR, MODE_CLASSIQUE, GROUP_BASSE, GROUP_POMPE)
 from PyPDF2 import PdfReader # Ou PdfFileReader pour les très vieilles versions
 
@@ -25,12 +26,9 @@ def _mode2text(mode):
         return f"{mode}{type(mode)}"
 
 def _getPdfNames(track_path):
-    # os.listdir donne tout le contenu
     files = []
     for f in os.listdir(track_path):
-        # On vérifie que c'est un fichier et qu'il finit par .pdf
         if os.path.isfile(os.path.join(track_path, f)) and f.endswith('.pdf'):
-            # os.path.splitext sépare 'trompette' et '.pdf'
             name_no_ext = os.path.splitext(f)[0]
             files.append(name_no_ext)
     return files
@@ -63,14 +61,31 @@ def getScoreNameLite(track_path, instrument, voice=1, mode=MODE_POPULAR, solo=Fa
 
 def getScoreName(track_path, instrument, voice=1, mode=MODE_POPULAR, solo=False, easy=False, page=1, is_obsolete=False):
     _set_error("")
-    with open(os.path.join(track_path, TRACKNAME_FNAME), "r", encoding="utf-8") as fp:
-        track_name = fp.read(-1).strip()
     
+    trackname_file = os.path.join(track_path, TRACKNAME_FNAME)
+    if os.path.exists(trackname_file):
+        with open(trackname_file, "r", encoding="utf-8") as fp:
+            track_name = fp.read(-1).strip()
+    else:
+        track_name = os.path.basename(track_path)
+
+    # Extraction du numéro de voix si l'instrument fourni finit déjà par un chiffre (ex: clarinette2)
+    requested_voice = voice
+    match = re.search(r'^(.*?)(\d+)$', instrument)
+    if match:
+        clean_instrument = match.group(1)
+        try:
+            requested_voice = int(match.group(2))
+        except ValueError:
+            pass
+    else:
+        clean_instrument = instrument
+
     # 1. Validation élargie
-    if instrument not in INSTRUMENTS and instrument not in TONALITES and instrument not in VIRTUAL_INSTRUMENTS:
+    if clean_instrument not in INSTRUMENTS and clean_instrument not in TONALITES and clean_instrument not in VIRTUAL_INSTRUMENTS and instrument not in INSTRUMENTS:
         _set_error(f"L'instrument '{instrument}' est inconnu.")
         return None
-    
+
     if not os.path.exists(track_path):
         _set_error(f"Le dossier '{track_path}' est inconnu.")
         return None
@@ -78,17 +93,21 @@ def getScoreName(track_path, instrument, voice=1, mode=MODE_POPULAR, solo=False,
     # On scanne les PDF comme source de vérité (noms sans extension)
     instruments_on_disk = [os.path.splitext(f)[0] for f in os.listdir(track_path) 
                            if f.lower().endswith('.pdf')]
-    
+
     if not instruments_on_disk:
         _set_error(f"Aucune partition trouvée pour {track_name}")
         return None
 
-    # 2. Construction de la cascade de variantes
+    # Si l'instrument exact demandé est sur le disque (ex: clarinette2.pdf)
+    if instrument in instruments_on_disk:
+        return instrument
+
+    # 2. Construction de la cascade de variantes sur le nom nettoyé
     variantes = []
-    if easy and solo: variantes.append(f"easy{instrument}solo")
-    if easy:           variantes.append(f"easy{instrument}")
-    if solo:           variantes.append(f"{instrument}solo")
-    variantes.append(instrument)
+    if easy and solo: variantes.append(f"easy{clean_instrument}solo")
+    if easy:           variantes.append(f"easy{clean_instrument}")
+    if solo:           variantes.append(f"{clean_instrument}solo")
+    variantes.append(clean_instrument)
 
     found = None
     for base in variantes:
@@ -100,43 +119,50 @@ def getScoreName(track_path, instrument, voice=1, mode=MODE_POPULAR, solo=False,
     # 3. Repli si rien trouvé sur le disque
     if found is None:
         if mode == MODE_POPULAR:
-            found = findPopularInstrument(track_path, instrument, instruments_on_disk, track_name)
+            found = findPopularInstrument(track_path, clean_instrument, instruments_on_disk, track_name)
         elif mode == MODE_CLASSIQUE:
-            found = findClassicInstrument(track_path, instrument, instruments_on_disk, track_name)
+            found = findClassicInstrument(track_path, clean_instrument, instruments_on_disk, track_name)
 
-    # 4. Gestion finale des voix
+    # 4. Gestion finale des voix (Descente d'escalier)
     if found:
-        final_base = found
-        # Descente d'escalier pour les voix
+        final_base = None
         try:
-            v_start = int(voice)
-        except:
+            v_start = int(requested_voice)
+        except (ValueError, TypeError):
             v_start = 1
-            
-        for v in range(v_start, 1, -1):
-            iname = f"{found}{v}"
-            if iname in instruments_on_disk:
-                final_base = iname
-                break
-        
-        # Sécurité : si le nom trouvé (ou substitué) n'est pas tel quel sur le disque, 
-        # on cherche la première voix disponible (ex: sax_alto2 seul présent)
-        if final_base not in instruments_on_disk:
+
+        # Teste de la voix demandée jusqu'à 1 (ex: clarinette2, puis clarinette1, puis clarinette)
+        for v in range(v_start, 0, -1):
+            if v == 1:
+                iname_v1 = f"{found}1"
+                if iname_v1 in instruments_on_disk:
+                    final_base = iname_v1
+                    break
+                elif found in instruments_on_disk:
+                    final_base = found
+                    break
+            else:
+                iname = f"{found}{v}"
+                if iname in instruments_on_disk:
+                    final_base = iname
+                    break
+
+        # Sécurité : si aucun numéro de voix ne correspond, on prend le premier disponible
+        if not final_base or final_base not in instruments_on_disk:
             candidates = sorted([f for f in instruments_on_disk if f.startswith(found) and f[len(found):].isdigit()])
             if candidates:
                 final_base = candidates[0]
+            elif found in instruments_on_disk:
+                final_base = found
             else:
-                # Si on arrive ici, c'est que l'instrument trouvé par substitution 
-                # (ex: 'SIb') n'existe vraiment pas sur le disque.
                 _set_error(f"Incohérence : {found} introuvable sur le disque.")
                 return None
 
-        return final_base # Retourne le nom de base sans extension
+        return final_base
 
     return None
 
 def findPopularInstrument(track_path, target_instrument, instruments_on_disk, trackname):
-    # On s'assure d'avoir les infos même pour les virtuels
     info = INSTRUMENTS.get(target_instrument) or VIRTUAL_INSTRUMENTS.get(target_instrument)
     if not info: return None
     t_tona, t_clef, t_oct, t_fam = info
@@ -167,7 +193,7 @@ def findPopularInstrument(track_path, target_instrument, instruments_on_disk, tr
 
     _set_error(f"POP: Aucune partition (même de secours) {target_instrument} pour {trackname}.")
     return None
-    
+
 def findClassicInstrument(track_path, target_instrument, instruments_on_disk, trackname):
     info = INSTRUMENTS.get(target_instrument) or VIRTUAL_INSTRUMENTS.get(target_instrument)
     if not info: return None

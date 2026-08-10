@@ -125,7 +125,7 @@ def generate_track_tree():
         print(f"ERREUR : {err_msg}")
         return tracks, converted_count, {"STRUCTURE": [err_msg]}, [], 0
         
-    for root, dirs, files in os.walk(DATABASE_DIR):
+    for root, dirs, files in os.walk(DATABASE_DIR, topdown=False):
         # 1. Nettoyage à la volée des .mscz~ rencontrés n'importe où dans la base
         for f in files:
             if f.endswith("mscz~") or f.endswith(".mscz~"):
@@ -148,7 +148,8 @@ def generate_track_tree():
             # Nettoyage automatique des images orphelines (dont le PDF n'existe plus ou a été renommé)
             for f in files:
                 if f.endswith(".jpg") and "_p" in f:
-                    img_instr = f.split("_p")[0]
+                    # CORRECTION ICI : rsplit("...", 1) coupe uniquement le dernier "_p" de la chaîne
+                    img_instr = f.rsplit("_p", 1)[0]
                     if img_instr not in valid_pdf_bases:
                         try:
                             os.remove(os.path.join(root, f))

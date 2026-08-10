@@ -29,7 +29,6 @@ INSTRUMENTS = {
 "horn_tenor_do_keyF": ("DO","FA","-1","CUIVRES"),
 "horn_baryton": ("SIb","SOL","-1","CUIVRES"),
 "horn_baryton_sib_keyF": ("SIb","FA","-1","CUIVRES"),
-"horn_baryton_do_keyF": ("DO","FA","-1","CUIVRES"),
 "horn_baryton_do": ("DO","SOL","-1","CUIVRES"),
 "horn_baryton_do_keyF": ("DO","FA","-1","CUIVRES"),
 "horn_baryton_keyF": ("SIb","FA","-1","CUIVRES"),
@@ -108,7 +107,6 @@ INSTRUMENTS = {
 "castagnettes": ("NP","NP","0","PERCUSSIONS"),
 "wood_block": ("NP","NP","0","PERCUSSIONS"),
 "cabasa": ("NP","NP","0","PERCUSSIONS"),
-"tambourin": ("NP","NP","0","PERCUSSIONS"),
 "vibraslap": ("NP","NP","0","PERCUSSIONS"),
 "homme_soprano": ("DO","SOL","0","VOIX_HOMME"),
 "homme_mezzo_soprano": ("DO","SOL","0","VOIX_HOMME"),
@@ -167,7 +165,7 @@ INSTRUMENTS = {
 }
 
 TONALITES = ("DO", "REb", "RE", "MIb", "MI", "FA", "SOLb", "SOL", "LAb", "LA", "SIb", "SI", "NP")
-FAMILIES = ("BOIS", "CUIVRES", "CORDES_PINCEES", "CORDES_FROTTEES", "HANCHES_LIBRES", "CLAVIERS", "PERCUSSIONS_MELODIQUES", "PERCUSSIONS", "VOIX_HOMME", "VOIX_FEMME", "VOIX", "TEXTE", "HARMONIE")
+FAMILIES = ("BOIS", "CUIVRES", "CORDES_PINCEES", "CORDES_FROTTEES", "HANCHES_LIBRES", "CLAVIERS", "PERCUSSIONS_MELODIQUES", "PERCUSSIONS", "VOIX_HOMME", "VOIX_FEMME", "VOIX", "TEXTE", "HARMONIE", "VIRTUAL")
 CLEFS = ("FA", "SOL", "UT3_", "UT4_", "NP")
 MODE_POPULAR = 1
 MODE_CLASSIQUE = 2
@@ -178,42 +176,35 @@ VIRTUAL_INSTRUMENTS = {t: (t, "SOL", "0", "VIRTUAL") for t in TONALITES + ("tutt
 VIRTUAL_INSTRUMENTS["trombone_virtual"] = ("DO", "FA", "-1", "VIRTUAL")
 
 GROUP_BASSE = ("basse", "contrebasse", "tuba", "basse_keyG")
-GROUP_POMPE = ("guitare", "banjo_4_cordes", "piano", "synthesiseur", "accordeon", "harmonium", "orgue")
+GROUP_POMPE = ("guitare", "banjo_4_cordes", "piano", "synthetiseur", "accordeon", "harmonium", "orgue")
 
 def getFirstVoice(instrument):
     """ [easy]instrument_name[voice][solo] """
+    if not instrument:
+        return instrument
+
     # 1. Préfixe easy
     if instrument.startswith("easy") and len(instrument) > 4:
         instrument = instrument[4:]
-    
+
     # 2. Suffixe solo
     if instrument.endswith("solo") and len(instrument) > 4:
         instrument = instrument[:-4]
-    
-    # 3. Suffixe Voix
-    if instrument and instrument[-1].isdigit():
-        digit = instrument[-1]
-        if digit == '1':
-            # On interdit explicitement le chiffre 1 (ex: sax_alto1)
-            return None 
-        elif digit in "23456789":
-            instrument = instrument[:-1]
-            
+
+    # 3. Suffixe Voix (seulement si digit >= 2)
+    if instrument and instrument[-1] in "23456789":
+        instrument = instrument[:-1]
+
     return instrument
-    
+
 def isKnownInstrument(name):
     # Ici, on ne rappelle pas getFirstVoice car c'est le rôle de l'appelant 
     # de savoir ce qu'il veut tester (la racine ou le nom complet).
     return name in INSTRUMENTS or name in VIRTUAL_INSTRUMENTS
 
 def isValidInstrument(name):
-    if name.startswith("easy"):
-        name = name[len("easy"):]
-    if name[-1].isdigit():
-        name = name[:-1]
-    if name.endswith("solo"):
-        name = name[:-len("solo")]
-    return isKnownInstrument(name)
+    clean_name = getFirstVoice(name)
+    return isKnownInstrument(clean_name) if clean_name else False
 
 if __name__ == "__main__":
 
@@ -227,7 +218,6 @@ NP (not pitched) est une tonalité virtuelle pour les percussions
 """
 
     VALID_CHARACTERS = "abcdefghijklmnopqrstuvwxyz0123456789_"
-    
 
     def validateInstrument(name, data):
         # 1. Validation du NOM
@@ -245,7 +235,7 @@ NP (not pitched) est une tonalité virtuelle pour les percussions
 
         tonality, clef, octave, family = data
 
-        # 3. Validation des listes (Pense à ajouter "VIRTUAL" et "HARMONIE" etc. dans FAMILIES)
+        # 3. Validation des listes
         if tonality not in TONALITES:
             raise Exception(f"ERREUR Tonalité inconnue: {tonality} pour {name}")
             
@@ -269,6 +259,4 @@ NP (not pitched) est une tonalité virtuelle pour les percussions
 
     utestInstruments()
 
-    print("A L L   I N S T R U M E N T S   P A S S E D !")
-    
-    
+    print("A L L    I N S T R U M E N T S    P A S S E D !")
