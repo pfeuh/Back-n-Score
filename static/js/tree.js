@@ -136,7 +136,7 @@ function renderAltInstrumentTree(container) {
                 return;
             }
 
-            // Fonction utilitaire locale pour nettoyer le nom (gère easy, solo, chiffres de voix 2,3,4)
+            // Fonction utilitaire locale pour nettoyer le nom (gère easy, solo, chiffres de voix 2,3,4) UNIQUEMENT pour la détection de la tonalité si l'instrument exact n'est pas dans META_INSTRUMENTS
             function getBaseInstrumentName(name) {
                 if (name.startsWith("easy") && name.length > 4) {
                     name = name.substring(4);
@@ -150,7 +150,7 @@ function renderAltInstrumentTree(container) {
                 return name;
             }
 
-            // Regroupement précis basé sur META_INSTRUMENTS en nettoyant le nom pour les variantes (2, solo, easy)
+            // Regroupement basé sur META_INSTRUMENTS
             var grouped = {};
             for (var i = 0; i < QUARTES_ORDER.length; i++) {
                 grouped[QUARTES_ORDER[i]] = [];
@@ -162,7 +162,6 @@ function renderAltInstrumentTree(container) {
                 var instName = instruments[i];
                 var tona = "AUTRES";
 
-                // On teste d'abord le nom exact, puis le nom nettoyé (ex: clarinette2 -> clarinette)
                 var lookupName = instName;
                 if (typeof META_INSTRUMENTS !== "undefined") {
                     if (!META_INSTRUMENTS[lookupName]) {
@@ -216,7 +215,6 @@ function renderAltInstrumentTree(container) {
 
                     closeAllTonalites.push(closeSub);
 
-                    // Vérifie si l'instrument actif se trouve dans cette tonalité pour ouvrir la branche automatiquement
                     var containsSelected = listInsts.indexOf(selectedInstrument) !== -1;
                     if (containsSelected) {
                         openSub();
@@ -238,7 +236,7 @@ function renderAltInstrumentTree(container) {
                         (function(instName) {
                             var isSelected = (instName === selectedInstrument);
                             addTreeRow(instName, function() {
-                                // Construction dynamique du chemin d'instrument pour last_inst_path
+                                // Construction dynamique du chemin d'instrument pour last_inst_path sans modifier instName cliqué
                                 var modeName = (typeof instru_select_mode !== "undefined" && instru_select_mode.get() == MODE_POPULAR) ? "POPULAR" : "CLASSIQUE";
                                 var categoryName = "AUTRES";
                                 var lookupName = instName;
@@ -248,7 +246,7 @@ function renderAltInstrumentTree(container) {
                                         lookupName = getBaseInstrumentName(instName);
                                     }
                                     if (META_INSTRUMENTS[lookupName]) {
-                                        categoryName = META_INSTRUMENTS[lookupName][1] || "AUTRES"; // Indice 1 = catégorie (ex: BOIS)
+                                        categoryName = META_INSTRUMENTS[lookupName][1] || "AUTRES"; // Indice 1 = catégorie
                                     }
                                 }
 
