@@ -309,7 +309,7 @@ def send_json_data(path):
     return send_from_directory(DATA_DIR, path)
 
 @app.route('/get_score_info')
-def score_info():
+def get_score_info():
     global trackLocation
     loc = request.args.get('loc')
     instrument = request.args.get('instrument')

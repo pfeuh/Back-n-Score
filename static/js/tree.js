@@ -236,7 +236,7 @@ function renderAltInstrumentTree(container) {
                         (function(instName) {
                             var isSelected = (instName === selectedInstrument);
                             addTreeRow(instName, function() {
-                                // Construction dynamique du chemin d'instrument pour last_inst_path sans modifier instName cliqué
+                                // Construction dynamique du chemin d'instrument pour last_inst_path sans modifier current_instrument
                                 var modeName = (typeof instru_select_mode !== "undefined" && instru_select_mode.get() == MODE_POPULAR) ? "POPULAR" : "CLASSIQUE";
                                 var categoryName = "AUTRES";
                                 var lookupName = instName;
@@ -258,9 +258,33 @@ function renderAltInstrumentTree(container) {
                                     }
                                 }
 
-                                if (typeof current_instrument !== "undefined" && current_instrument.set) {
-                                    current_instrument.set(instName);
+                                // Interrogation du serveur pour connaître le nombre de pages et affichage de la partition alternative
+                                if (typeof track_location !== "undefined" && typeof getScore === "function") {
+                                    var loc = track_location.get();
+                                    var mode = (typeof instru_select_mode !== "undefined") ? instru_select_mode.get() : MODE_POPULAR;
+                                    var voice = (typeof voice_num !== "undefined") ? voice_num.get() : 1;
+                                    var solo = (typeof solo_toggle !== "undefined") ? (solo_toggle.get() ? 1 : 0) : 0;
+                                    var easy = (typeof easy_toggle !== "undefined") ? (easy_toggle.get() ? 1 : 0) : 0;
+
+                                    var infoUrl = '/get_score_info?loc=' + encodeURIComponent(loc) +
+                                                  '&instrument=' + encodeURIComponent(instName) +
+                                                  '&voice=' + encodeURIComponent(voice) +
+                                                  '&mode=' + encodeURIComponent(mode) +
+                                                  '&solo=' + encodeURIComponent(solo) +
+                                                  '&easy=' + encodeURIComponent(easy);
+
+                                    fetch(infoUrl)
+                                        .then(function(res) { return res.json(); })
+                                        .then(function(data) {
+                                            var nbPages = (data && data.status === "success" && data.nb_pages) ? data.nb_pages : 1;
+                                            getScore(instName, nbPages);
+                                        })
+                                        .catch(function(err) {
+                                            console.error("Erreur get_score_info :", err);
+                                            getScore(instName, 1);
+                                        });
                                 }
+
                                 closeTreeView();
                             }, isSelected, subBranchDiv, 55);
                         })(listInsts[j]);
