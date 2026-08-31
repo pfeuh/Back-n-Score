@@ -25,8 +25,8 @@ def trackPdfToJpg(pdf_path, bw_flag=False):
                 try: os.remove(old_jpg)
                 except: pass
 
-            # 2. Conversion
-            images = convert_from_path(pdf_path, dpi=150, fmt="jpeg")
+            # 2. Conversion (ajout de use_cropbox=True pour forcer l'utilisation du CropBox au lieu du MediaBox)
+            images = convert_from_path(pdf_path, dpi=150, fmt="jpeg", use_cropbox=True)
             
             # 3. Sauvegarde des pages
             for i, image in enumerate(images):
