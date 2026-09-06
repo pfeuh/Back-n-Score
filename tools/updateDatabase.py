@@ -8,7 +8,7 @@ quand on a changé quelque chose dans la base de données:
 2. renomage de dossier/fichiers
 3. etc...
 4. Audit strict et extraction des types de MP3 (Étape 1 Audio)
-5. Nettoyage automatique et optimisé des fichiers de sauvegarde MuseScore (.mscz~)
+5. Nettoyage automatique et optimisé des fichiers de sauvegarde MuseScore (.mscz~) et dossiers (.mscbackup)
 """
 
 import os
@@ -17,6 +17,7 @@ import sys
 import re
 from pathlib import Path
 import time
+import shutil
 
 VERBOSE = "-v" in sys.argv
 
@@ -126,7 +127,19 @@ def generate_track_tree():
         return tracks, converted_count, {"STRUCTURE": [err_msg]}, [], 0
         
     for root, dirs, files in os.walk(DATABASE_DIR, topdown=False):
-        # 1. Nettoyage à la volée des .mscz~ rencontrés n'importe où dans la base
+        # 1. Nettoyage à la volée des dossiers invisibles .mscbackup
+        for d in dirs:
+            if d == ".mscbackup":
+                full_dir_path = os.path.join(root, d)
+                try:
+                    shutil.rmtree(full_dir_path)
+                    mscz_deleted_count += 1
+                    if VERBOSE:
+                        print(f"Dossier backup supprimé : {full_dir_path}")
+                except Exception as e:
+                    print(f"Impossible de supprimer le dossier backup {full_dir_path} : {e}")
+
+        # 2. Nettoyage à la volée des .mscz~ rencontrés n'importe où dans la base
         for f in files:
             if f.endswith("mscz~") or f.endswith(".mscz~"):
                 full_path = os.path.join(root, f)
@@ -138,7 +151,7 @@ def generate_track_tree():
                 except Exception as e:
                     print(f"Impossible de supprimer le fichier backup {full_path} : {e}")
 
-        # 2. Indexation des dossiers valides (contenant trackname.txt)
+        # 3. Indexation des dossiers valides (contenant trackname.txt)
         if "trackname.txt" in files:
             relative_path = os.path.relpath(root, DATABASE_DIR)
             
@@ -293,7 +306,7 @@ def run():
     start_time = time.time()
     OUTPUT_DIR.mkdir(exist_ok=True)
 
-    # Récupération des données avec boucle unique (Linter + Nettoyage mscz~ inclus)
+    # Récupération des données avec boucle unique (Linter + Nettoyage mscz~ et .mscbackup inclus)
     tracks, total_converted, categorized_errors, mp3_types, mscz_deleted = generate_track_tree()
     
     # Sauvegarde du catalogue de morceaux
@@ -343,5 +356,5 @@ if __name__ == "__main__":
     total_errors = len(res['errors'])
     print(f"\nIndexation terminée. Status: {res['status']}.")
     print(f"Morceaux valides: {res['tracks_count']} | Types MP3 extraits: {res['mp3_types_count']}")
-    print(f"Sauvegardes MuseScore (.mscz~) supprimées (à la volée): {res['mscz_deleted_count']}")
+    print(f"Éléments de sauvegarde MuseScore (.mscz~ / .mscbackup) supprimés : {res['mscz_deleted_count']}")
     print(f"Anomalies bloquées (voir database_errors.txt): {total_errors}")

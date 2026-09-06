@@ -13,5 +13,5 @@ static/qrcode_lan.png.txt
 static/qrcode_wifi.png
 static/qrcode_wifi.png.txt
 tools/utest_getSCoreName.py
-
+tools/.synchro_config.json
 
