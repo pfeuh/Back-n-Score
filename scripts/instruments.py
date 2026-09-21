@@ -145,6 +145,7 @@ INSTRUMENTS = {
 "banjoline": ("DO","SOL","0","CORDES_PINCEES"),
 "mandole": ("DO","SOL","-1","CORDES_PINCEES"),
 "guitare": ("DO","SOL","-1","CORDES_PINCEES"),
+"guitare_tab": ("DO","SOL","-1","CORDES_PINCEES"), # idealement tab  devrait être un suffixe
 "guitare_classique": ("DO","SOL","-1","CORDES_PINCEES"),
 "guitare_electrique": ("DO","SOL","-1","CORDES_PINCEES"),
 "guitare_folk": ("DO","SOL","-1","CORDES_PINCEES"),

@@ -139,9 +139,9 @@ def generate_track_tree():
                 except Exception as e:
                     print(f"Impossible de supprimer le dossier backup {full_dir_path} : {e}")
 
-        # 2. Nettoyage à la volée des .mscz~ rencontrés n'importe où dans la base
+        # 2. Nettoyage à la volée des .mscz~ mscz.autosave rencontrés n'importe où dans la base
         for f in files:
-            if f.endswith("mscz~") or f.endswith(".mscz~"):
+            if f.endswith(".mscz~") or f.endswith(".mscz.autosave"):
                 full_path = os.path.join(root, f)
                 try:
                     os.remove(full_path)
