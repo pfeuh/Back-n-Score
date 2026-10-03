@@ -37,11 +37,11 @@ function prepareTreeInterface(viewType) {
     closeBtn.onclick = closeTreeView; 
     popupContent.appendChild(closeBtn);
 
-    // Conteneur principal unique de l'arbre
+    // Conteneur principal unique de l'arbre (élargi et étendu vers le bas)
     var treeHost = document.createElement('div');
     treeHost.id = "tree-container";
     treeHost.style.position = "absolute";
-    treeHost.style.top = "50px"; /* Laisse de l'espace pour le bouton fermer */
+    treeHost.style.top = "40px"; /* Légèrement remonté pour gagner en hauteur */
     treeHost.style.bottom = "0"; 
     treeHost.style.left = "0";
     treeHost.style.right = "0";
@@ -56,7 +56,7 @@ function addTreeRow(text, onClick, isSelected, container, paddingLeft) {
     div.className = "item-row";
     div.style.display = "block";
     div.style.width = "100%";
-    div.style.padding = "12px 15px"; 
+    div.style.padding = "6px 12px"; /* Padding encore plus réduit (compact) */
     if (paddingLeft) {
         div.style.paddingLeft = paddingLeft + "px";
     }
@@ -64,7 +64,7 @@ function addTreeRow(text, onClick, isSelected, container, paddingLeft) {
     div.style.boxSizing = "border-box"; 
     div.style.cursor = "pointer";
     div.style.color = "#FFFFFF";
-    div.style.fontSize = "16px";
+    div.style.fontSize = "22px"; /* Taille de police augmentée à 22px */
     div.style.whiteSpace = "nowrap"; 
     
     var cleanText = text.replace(/_/g, " ");
@@ -112,8 +112,8 @@ function renderAltInstrumentTree(container) {
     headerRow.style.borderBottom = "2px solid #444";
     headerRow.style.color = "#f1c40f";
     headerRow.style.fontWeight = "bold";
-    headerRow.style.padding = "14px 15px";
-    headerRow.style.fontSize = "16px";
+    headerRow.style.padding = "8px 12px"; /* Padding compact */
+    headerRow.style.fontSize = "22px"; /* Taille de police augmentée à 22px */
     headerRow.style.whiteSpace = "nowrap";
     headerRow.innerText = "📁 Instruments du morceau";
     container.appendChild(headerRow);
@@ -129,14 +129,14 @@ function renderAltInstrumentTree(container) {
         .then(function(instruments) {
             if (!instruments || instruments.length === 0) {
                 var emptyRow = document.createElement("div");
-                emptyRow.style.padding = "15px";
+                emptyRow.style.padding = "10px 12px";
+                emptyRow.style.fontSize = "22px";
                 emptyRow.style.color = "#888";
                 emptyRow.innerText = "Aucun instrument trouvé pour ce morceau.";
                 branchDiv.appendChild(emptyRow);
                 return;
             }
 
-            // Fonction utilitaire locale pour nettoyer le nom (gère easy, solo, chiffres de voix 2,3,4) UNIQUEMENT pour la détection de la tonalité si l'instrument exact n'est pas dans META_INSTRUMENTS
             function getBaseInstrumentName(name) {
                 if (name.startsWith("easy") && name.length > 4) {
                     name = name.substring(4);
@@ -150,7 +150,6 @@ function renderAltInstrumentTree(container) {
                 return name;
             }
 
-            // Regroupement basé sur META_INSTRUMENTS
             var grouped = {};
             for (var i = 0; i < QUARTES_ORDER.length; i++) {
                 grouped[QUARTES_ORDER[i]] = [];
@@ -168,7 +167,7 @@ function renderAltInstrumentTree(container) {
                         lookupName = getBaseInstrumentName(instName);
                     }
                     if (META_INSTRUMENTS[lookupName]) {
-                        tona = META_INSTRUMENTS[lookupName][0]; // Indice 0 = tonalité
+                        tona = META_INSTRUMENTS[lookupName][0];
                     }
                 }
 
@@ -192,10 +191,11 @@ function renderAltInstrumentTree(container) {
                     var subRow = document.createElement("div");
                     subRow.style.backgroundColor = "#1f1f1f";
                     subRow.style.color = "#FFF";
-                    subRow.style.padding = "10px 10px 10px 30px";
+                    subRow.style.padding = "6px 10px 6px 26px"; /* Padding compact */
                     subRow.style.borderBottom = "1px solid #333";
                     subRow.style.cursor = "pointer";
                     subRow.style.fontWeight = "500";
+                    subRow.style.fontSize = "22px"; /* Taille de police augmentée à 22px */
                     subRow.style.whiteSpace = "nowrap";
                     subRow.innerText = "🎵 " + tonName + " (" + listInsts.length + ")";
                     branchDiv.appendChild(subRow);
@@ -236,7 +236,6 @@ function renderAltInstrumentTree(container) {
                         (function(instName) {
                             var isSelected = (instName === selectedInstrument);
                             addTreeRow(instName, function() {
-                                // Construction dynamique du chemin d'instrument pour last_inst_path sans modifier current_instrument
                                 var modeName = (typeof instru_select_mode !== "undefined" && instru_select_mode.get() == MODE_POPULAR) ? "POPULAR" : "CLASSIQUE";
                                 var categoryName = "AUTRES";
                                 var lookupName = instName;
@@ -246,7 +245,7 @@ function renderAltInstrumentTree(container) {
                                         lookupName = getBaseInstrumentName(instName);
                                     }
                                     if (META_INSTRUMENTS[lookupName]) {
-                                        categoryName = META_INSTRUMENTS[lookupName][1] || "AUTRES"; // Indice 1 = catégorie
+                                        categoryName = META_INSTRUMENTS[lookupName][1] || "AUTRES";
                                     }
                                 }
 
@@ -258,7 +257,6 @@ function renderAltInstrumentTree(container) {
                                     }
                                 }
 
-                                // Interrogation du serveur pour connaître le nombre de pages et affichage de la partition alternative
                                 if (typeof track_location !== "undefined" && typeof getScore === "function") {
                                     var loc = track_location.get();
                                     var mode = (typeof instru_select_mode !== "undefined") ? instru_select_mode.get() : MODE_POPULAR;
@@ -286,7 +284,7 @@ function renderAltInstrumentTree(container) {
                                 }
 
                                 closeTreeView();
-                            }, isSelected, subBranchDiv, 55);
+                            }, isSelected, subBranchDiv, 50);
                         })(listInsts[j]);
                     }
                 })(tonaliteName, subInstruments);
@@ -326,9 +324,9 @@ function renderTrueInstrumentTree(container) {
             catRow.style.borderBottom = "2px solid #444";
             catRow.style.color = "#f1c40f";
             catRow.style.fontWeight = "bold";
-            catRow.style.padding = "14px 15px";
+            catRow.style.padding = "8px 12px"; /* Padding compact */
             catRow.style.cursor = "pointer";
-            catRow.style.fontSize = "16px";
+            catRow.style.fontSize = "22px"; /* Taille de police augmentée à 22px */
             catRow.style.whiteSpace = "nowrap";
             catRow.innerText = "📁 " + categoryName.replace(/_/g, " ");
             container.appendChild(catRow);
@@ -378,7 +376,7 @@ function renderTrueInstrumentTree(container) {
                             last_inst_path.set(modeName + "/" + categoryName + "/" + instName);
                             current_instrument.set(instName);
                             closeTreeView();
-                        }, isSelected, branchDiv, 35);
+                        }, isSelected, branchDiv, 25);
                     })(categoryData[i]);
                 }
             } else {
@@ -397,10 +395,11 @@ function renderTrueInstrumentTree(container) {
                         var subRow = document.createElement("div");
                         subRow.style.backgroundColor = "#1f1f1f";
                         subRow.style.color = "#FFF";
-                        subRow.style.padding = "10px 10px 10px 30px";
+                        subRow.style.padding = "6px 10px 6px 25px"; /* Padding compact */
                         subRow.style.borderBottom = "1px solid #333";
                         subRow.style.cursor = "pointer";
                         subRow.style.fontWeight = "500";
+                        subRow.style.fontSize = "22px"; /* Taille de police augmentée à 22px */
                         subRow.style.whiteSpace = "nowrap";
                         subRow.innerText = tonaliteName;
                         branchDiv.appendChild(subRow);
@@ -451,7 +450,7 @@ function renderTrueInstrumentTree(container) {
                                     last_inst_path.set(modeName + "/" + categoryName + "/" + tonaliteName + "/" + instName);
                                     current_instrument.set(instName);
                                     closeTreeView();
-                                }, isSelected, subBranchDiv, 55);
+                                }, isSelected, subBranchDiv, 50);
                             })(subInstruments[j]);
                         }
                     })(subKey, categoryData[subKey]);
@@ -505,14 +504,14 @@ function renderTrackTree(tree, basePath, container) {
                 var labelName = name.replace(/([A-Z])/g, ' $1').replace(/^./, function(str){ return str.toUpperCase(); }).trim();
 
                 var folderRow = document.createElement("div");
-                folderRow.style.backgroundColor = padding === 15 ? "#2a2a2a" : "#1f1f1f";
+                folderRow.style.backgroundColor = (depth === 1) ? "#2a2a2a" : "#1f1f1f";
                 folderRow.style.borderBottom = "1px solid #333";
-                folderRow.style.color = padding === 15 ? "#f1c40f" : "#FFF";
-                folderRow.style.fontWeight = padding === 15 ? "bold" : "500";
-                folderRow.style.padding = "12px 15px";
+                folderRow.style.color = (depth === 1) ? "#f1c40f" : "#FFF";
+                folderRow.style.fontWeight = (depth === 1) ? "bold" : "500";
+                folderRow.style.padding = "6px 12px"; /* Padding compact */
                 folderRow.style.paddingLeft = padding + "px";
                 folderRow.style.cursor = "pointer";
-                folderRow.style.fontSize = "16px";
+                folderRow.style.fontSize = "22px"; /* Taille de police augmentée à 22px */
                 folderRow.style.whiteSpace = "nowrap";
                 
                 var icon = (depth === 1) ? "📁 " : (depth === 2 ? "📘 " : "🗄️ ");
@@ -547,7 +546,7 @@ function renderTrackTree(tree, basePath, container) {
                     }
                 };
 
-                buildHtmlTree(subData, branchDiv, padding + 20, nextPathParts);
+                buildHtmlTree(subData, branchDiv, padding + 16, nextPathParts); /* Retrait légèrement réduit pour la récursion */
 
                 if (lastLoc && lastLoc.indexOf(folderFullPath + "/") === 0) {
                     openFolder();
@@ -575,7 +574,7 @@ function renderTrackTree(tree, basePath, container) {
         }
     }
 
-    buildHtmlTree(rootJson, container, 15, []);
+    buildHtmlTree(rootJson, container, 12, []);
 
     if (typeof checkSync === "function") checkSync(); 
 }

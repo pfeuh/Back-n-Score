@@ -34,16 +34,17 @@ html, body {
 
 #tree-popup-content {
     position: relative;
-    top: 110px;
-    /* STRUCTURE INLINE-BLOCK : La boîte prend exactement la taille de son contenu */
+    top: 40px; /* Remonté pour gagner de la surface vers le bas */
+    /* STRUCTURE INLINE-BLOCK : La boîte prend la taille configurée ci-dessous */
     display: inline-block;
     text-align: left; 
     
-    /* LIMITES DE SÉCURITÉ : s'adapte élégamment, même si l'arbre ne contient que 2 lignes */
-    min-width: 320px; 
-    max-width: 90%;
-    height: 70%;
-    max-height: 550px;
+    /* Élargi et agrandi en hauteur */
+    min-width: 350px; 
+    width: 96%;
+    max-width: 900px;
+    height: 85%;
+    max-height: 850px;
     
     background: #222222;
     border: 2px solid #444;
@@ -331,11 +332,40 @@ body.tree-open #menu-bar {
     background-color: #d4ac0d;
 }
 
-/* --- STYLE BOUTON ALT --- */
-.btn-alt {
-    background-color: #d35400; /* Orange distinctif pour l'alternative locale */
+/* --- STYLE BOUTON ALT (Vert) --- */
+.menu-btn-alt {
+    display: inline-block;
+    vertical-align: middle;
+    height: 50px;
+    line-height: 48px; 
+    padding: 0 15px;
+    background-color: #27ae60; /* Vert */
+    color: white;
+    border: 1px solid #555;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    text-transform: uppercase;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    margin-left: 5px; 
+    margin-right: 5px;
+    text-decoration: none;
+    text-align: center;
 }
 
-.btn-alt:hover, .btn-alt:focus {
-    border-color: #f39c12;
+.menu-btn-alt:hover, .menu-btn-alt:focus {
+    border-color: #2ecc71;
+}
+
+.menu-btn-alt:active {
+    background-color: #219653;
+    transform: translateY(2px);
+}
+
+.menu-btn-alt:disabled {
+    background-color: #222;
+    color: #666;
+    cursor: not-allowed;
 }

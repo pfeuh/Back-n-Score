@@ -77,8 +77,8 @@ def clean_and_validate_mp3(filename, relative_path):
     mp3_name = filename[:-4]  # Enlève l'extension .mp3
 
     # 1. Détection des pistes de section obsolètes (chiffres ou mots-clés de structure)
-    if re.search(r'\d', mp3_name):
-        raise Exception(f"Fichier de section obsolète (contient des chiffres). À supprimer, utilise les locators.")
+    #~ if re.search(r'\d', mp3_name):
+        #~ raise Exception(f"Fichier de section obsolète (contient des chiffres). À supprimer, utilise les locators.")
         
     interdit_keywords = ["bridge", "interlude", "end", "intro", "chorus"]
     if any(kw in mp3_name.lower() for kw in interdit_keywords):

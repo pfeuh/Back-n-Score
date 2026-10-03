@@ -46,6 +46,7 @@ INSTRUMENTS = {
 "clairon": ("SIb","SOL","0","CUIVRES"),
 "trompette_de_cavalerie": ("MIb","SOL","0","CUIVRES"),
 "trompette": ("SIb","SOL","0","CUIVRES"),
+"trompette_basse": ("SIb","SOL","-1","CUIVRES"),
 "trompette_piccolo": ("SIb","SOL","1","CUIVRES"),
 "trompette_do": ("DO","SOL","0","CUIVRES"),
 "trompette_la": ("LA","SOL","0","CUIVRES"),
