@@ -99,7 +99,7 @@ function loadView(viewType, path) {
     }
 }
 
-// Affichage des instruments du morceau courant regroupés par tonalité grâce à META_INSTRUMENTS
+// Affichage des instruments du morceau courant regroupés par tonalité grâce à META_INSTRUMENTS (Compatible vieille tablette via XMLHttpRequest)
 function renderAltInstrumentTree(container) {
     container.innerHTML = "";
     document.body.classList.add('tree-instruments-open');
@@ -112,8 +112,8 @@ function renderAltInstrumentTree(container) {
     headerRow.style.borderBottom = "2px solid #444";
     headerRow.style.color = "#f1c40f";
     headerRow.style.fontWeight = "bold";
-    headerRow.style.padding = "8px 12px"; /* Padding compact */
-    headerRow.style.fontSize = "22px"; /* Taille de police augmentée à 22px */
+    headerRow.style.padding = "8px 12px";
+    headerRow.style.fontSize = "22px";
     headerRow.style.whiteSpace = "nowrap";
     headerRow.innerText = "📁 Instruments du morceau";
     container.appendChild(headerRow);
@@ -122,11 +122,30 @@ function renderAltInstrumentTree(container) {
     branchDiv.style.display = "block";
     container.appendChild(branchDiv);
 
-    fetch('/get_available_instruments')
-        .then(function(response) {
-            return response.json();
-        })
-        .then(function(instruments) {
+    var loadingRow = document.createElement("div");
+    loadingRow.style.padding = "10px 12px";
+    loadingRow.style.fontSize = "22px";
+    loadingRow.style.color = "#888";
+    loadingRow.innerText = "Chargement des instruments...";
+    branchDiv.appendChild(loadingRow);
+
+    // Utilisation de XMLHttpRequest pour compatibilité totale avec les anciens navigateurs
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '/get_available_instruments', true);
+    
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+            branchDiv.innerHTML = ""; // Nettoyer le chargement
+
+            var instruments = [];
+            if (xhr.status === 200) {
+                try {
+                    instruments = JSON.parse(xhr.responseText);
+                } catch(e) {
+                    console.error("Erreur parsing JSON instruments :", e);
+                }
+            }
+
             if (!instruments || instruments.length === 0) {
                 var emptyRow = document.createElement("div");
                 emptyRow.style.padding = "10px 12px";
@@ -138,14 +157,17 @@ function renderAltInstrumentTree(container) {
             }
 
             function getBaseInstrumentName(name) {
-                if (name.startsWith("easy") && name.length > 4) {
+                if (name.indexOf("easy") === 0 && name.length > 4) {
                     name = name.substring(4);
                 }
-                if (name.endsWith("solo") && name.length > 4) {
+                if (name.lastIndexOf("solo") === name.length - 4 && name.length > 4) {
                     name = name.substring(0, name.length - 4);
                 }
-                if (name.length > 0 && "234".indexOf(name.charAt(name.length - 1)) !== -1) {
-                    name = name.substring(0, name.length - 1);
+                if (name.length > 0) {
+                    var lastChar = name.charAt(name.length - 1);
+                    if (lastChar === '2' || lastChar === '3' || lastChar === '4') {
+                        name = name.substring(0, name.length - 1);
+                    }
                 }
                 return name;
             }
@@ -191,11 +213,11 @@ function renderAltInstrumentTree(container) {
                     var subRow = document.createElement("div");
                     subRow.style.backgroundColor = "#1f1f1f";
                     subRow.style.color = "#FFF";
-                    subRow.style.padding = "6px 10px 6px 26px"; /* Padding compact */
+                    subRow.style.padding = "6px 10px 6px 26px";
                     subRow.style.borderBottom = "1px solid #333";
                     subRow.style.cursor = "pointer";
                     subRow.style.fontWeight = "500";
-                    subRow.style.fontSize = "22px"; /* Taille de police augmentée à 22px */
+                    subRow.style.fontSize = "22px";
                     subRow.style.whiteSpace = "nowrap";
                     subRow.innerText = "🎵 " + tonName + " (" + listInsts.length + ")";
                     branchDiv.appendChild(subRow);
@@ -215,7 +237,13 @@ function renderAltInstrumentTree(container) {
 
                     closeAllTonalites.push(closeSub);
 
-                    var containsSelected = listInsts.indexOf(selectedInstrument) !== -1;
+                    var containsSelected = false;
+                    for (var s = 0; s < listInsts.length; s++) {
+                        if (listInsts[s] === selectedInstrument) {
+                            containsSelected = true;
+                            break;
+                        }
+                    }
                     if (containsSelected) {
                         openSub();
                     }
@@ -271,16 +299,23 @@ function renderAltInstrumentTree(container) {
                                                   '&solo=' + encodeURIComponent(solo) +
                                                   '&easy=' + encodeURIComponent(easy);
 
-                                    fetch(infoUrl)
-                                        .then(function(res) { return res.json(); })
-                                        .then(function(data) {
-                                            var nbPages = (data && data.status === "success" && data.nb_pages) ? data.nb_pages : 1;
+                                    var infoXhr = new XMLHttpRequest();
+                                    infoXhr.open('GET', infoUrl, true);
+                                    infoXhr.onreadystatechange = function() {
+                                        if (infoXhr.readyState === 4) {
+                                            var nbPages = 1;
+                                            if (infoXhr.status === 200) {
+                                                try {
+                                                    var data = JSON.parse(infoXhr.responseText);
+                                                    if (data && data.status === "success" && data.nb_pages) {
+                                                        nbPages = data.nb_pages;
+                                                    }
+                                                } catch(err) {}
+                                            }
                                             getScore(instName, nbPages);
-                                        })
-                                        .catch(function(err) {
-                                            console.error("Erreur get_score_info :", err);
-                                            getScore(instName, 1);
-                                        });
+                                        }
+                                    };
+                                    infoXhr.send();
                                 }
 
                                 closeTreeView();
@@ -289,10 +324,20 @@ function renderAltInstrumentTree(container) {
                     }
                 })(tonaliteName, subInstruments);
             }
-        })
-        .catch(function(error) {
-            console.error("Erreur lors du chargement des instruments alternatifs :", error);
-        });
+        }
+    };
+    
+    xhr.onerror = function() {
+        branchDiv.innerHTML = "";
+        var errRow = document.createElement("div");
+        errRow.style.padding = "10px 12px";
+        errRow.style.fontSize = "22px";
+        errRow.style.color = "#ff5555";
+        errRow.innerText = "Erreur réseau (ALT)";
+        branchDiv.appendChild(errRow);
+    };
+
+    xhr.send();
 }
 
 function renderTrueInstrumentTree(container) {
@@ -324,9 +369,9 @@ function renderTrueInstrumentTree(container) {
             catRow.style.borderBottom = "2px solid #444";
             catRow.style.color = "#f1c40f";
             catRow.style.fontWeight = "bold";
-            catRow.style.padding = "8px 12px"; /* Padding compact */
+            catRow.style.padding = "8px 12px";
             catRow.style.cursor = "pointer";
-            catRow.style.fontSize = "22px"; /* Taille de police augmentée à 22px */
+            catRow.style.fontSize = "22px";
             catRow.style.whiteSpace = "nowrap";
             catRow.innerText = "📁 " + categoryName.replace(/_/g, " ");
             container.appendChild(catRow);
@@ -380,7 +425,13 @@ function renderTrueInstrumentTree(container) {
                     })(categoryData[i]);
                 }
             } else {
-                var sortedSubKeys = Object.keys(categoryData).sort(function(a, b) {
+                var sortedSubKeys = [];
+                for (var key in categoryData) {
+                    if (categoryData.hasOwnProperty(key)) {
+                        sortedSubKeys.push(key);
+                    }
+                }
+                sortedSubKeys.sort(function(a, b) {
                     var indexA = QUARTES_ORDER.indexOf(a);
                     var indexB = QUARTES_ORDER.indexOf(b);
                     if (indexA === -1) indexA = 999;
@@ -395,11 +446,11 @@ function renderTrueInstrumentTree(container) {
                         var subRow = document.createElement("div");
                         subRow.style.backgroundColor = "#1f1f1f";
                         subRow.style.color = "#FFF";
-                        subRow.style.padding = "6px 10px 6px 25px"; /* Padding compact */
+                        subRow.style.padding = "6px 10px 6px 25px";
                         subRow.style.borderBottom = "1px solid #333";
                         subRow.style.cursor = "pointer";
                         subRow.style.fontWeight = "500";
-                        subRow.style.fontSize = "22px"; /* Taille de police augmentée à 22px */
+                        subRow.style.fontSize = "22px";
                         subRow.style.whiteSpace = "nowrap";
                         subRow.innerText = tonaliteName;
                         branchDiv.appendChild(subRow);
@@ -508,10 +559,10 @@ function renderTrackTree(tree, basePath, container) {
                 folderRow.style.borderBottom = "1px solid #333";
                 folderRow.style.color = (depth === 1) ? "#f1c40f" : "#FFF";
                 folderRow.style.fontWeight = (depth === 1) ? "bold" : "500";
-                folderRow.style.padding = "6px 12px"; /* Padding compact */
+                folderRow.style.padding = "6px 12px";
                 folderRow.style.paddingLeft = padding + "px";
                 folderRow.style.cursor = "pointer";
-                folderRow.style.fontSize = "22px"; /* Taille de police augmentée à 22px */
+                folderRow.style.fontSize = "22px";
                 folderRow.style.whiteSpace = "nowrap";
                 
                 var icon = (depth === 1) ? "📁 " : (depth === 2 ? "📘 " : "🗄️ ");
@@ -546,7 +597,7 @@ function renderTrackTree(tree, basePath, container) {
                     }
                 };
 
-                buildHtmlTree(subData, branchDiv, padding + 16, nextPathParts); /* Retrait légèrement réduit pour la récursion */
+                buildHtmlTree(subData, branchDiv, padding + 16, nextPathParts);
 
                 if (lastLoc && lastLoc.indexOf(folderFullPath + "/") === 0) {
                     openFolder();
