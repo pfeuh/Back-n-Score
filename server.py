@@ -288,6 +288,10 @@ def selector():
 def pupitre(): 
     return send_from_directory(WEB_DIR, 'pupitre.html')
 
+@app.route('/remote')
+def remote(): 
+    return send_from_directory(WEB_DIR, 'remote.html')
+
 @app.route('/admin')
 def admin(): 
     return send_from_directory(WEB_DIR, 'admin.html')
