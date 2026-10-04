@@ -105,18 +105,17 @@ body.tree-open #menu-bar {
     font-size: 0;
 }
 
-/* Style commun pour les éléments cliquables */
-.menu-btn, .solo-label, .custom-select {
+/* Style commun unifié pour les éléments de la barre (Police 20px homogène) */
+.menu-btn, .menu-btn-alt, .solo-label, .custom-select {
     display: inline-block;
     vertical-align: middle;
     height: 50px;
     line-height: 48px; 
     padding: 0 15px;
-    background-color: #34495e;
     color: white;
     border: 1px solid #555;
     border-radius: 6px;
-    font-size: 16px;
+    font-size: 20px;
     font-weight: bold;
     cursor: pointer;
     text-transform: uppercase;
@@ -128,12 +127,30 @@ body.tree-open #menu-bar {
     text-align: center;
 }
 
+/* Couleurs spécifiques des boutons de la barre */
+.menu-btn {
+    background-color: #34495e;
+}
+.menu-btn:hover, .menu-btn:focus {
+    border-color: #1abc9c;
+}
 .menu-btn:active {
     background-color: #1abc9c;
     transform: translateY(2px);
 }
 
-.menu-btn:disabled {
+.menu-btn-alt {
+    background-color: #27ae60;
+}
+.menu-btn-alt:hover, .menu-btn-alt:focus {
+    border-color: #2ecc71;
+}
+.menu-btn-alt:active {
+    background-color: #219653;
+    transform: translateY(2px);
+}
+
+.menu-btn:disabled, .menu-btn-alt:disabled {
     background-color: #222;
     color: #666;
     cursor: not-allowed;
@@ -144,6 +161,7 @@ body.tree-open #menu-bar {
 .solo-label {
     user-select: none;
     -webkit-user-select: none;
+    background-color: #34495e;
 }
 
 .solo-label input {
@@ -175,6 +193,7 @@ body.tree-open #menu-bar {
 /* --- STYLE SELECT (LISTE DÉROULANTE) --- */
 
 .custom-select {
+    background-color: #34495e;
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
@@ -183,7 +202,7 @@ body.tree-open #menu-bar {
     background-position: right 10px center;
     padding-right: 35px;
     outline: none;
-    max-width: 150px; 
+    max-width: 160px; 
 }
 
 .custom-select:hover, .custom-select:focus {
@@ -194,6 +213,7 @@ body.tree-open #menu-bar {
     background-color: #1a1a1a;
     color: white;
     padding: 10px;
+    font-size: 18px;
 }
 
 #score-container {
@@ -258,42 +278,4 @@ body.tree-open #menu-bar {
 
 .btn-ok:active {
     background-color: #d4ac0d;
-}
-
-/* --- STYLE BOUTON ALT (Vert) --- */
-.menu-btn-alt {
-    display: inline-block;
-    vertical-align: middle;
-    height: 50px;
-    line-height: 48px; 
-    padding: 0 15px;
-    background-color: #27ae60;
-    color: white;
-    border: 1px solid #555;
-    border-radius: 6px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    text-transform: uppercase;
-    -webkit-box-sizing: border-box;
-    box-sizing: border-box;
-    margin-left: 5px; 
-    margin-right: 5px;
-    text-decoration: none;
-    text-align: center;
-}
-
-.menu-btn-alt:hover, .menu-btn-alt:focus {
-    border-color: #2ecc71;
-}
-
-.menu-btn-alt:active {
-    background-color: #219653;
-    transform: translateY(2px);
-}
-
-.menu-btn-alt:disabled {
-    background-color: #222;
-    color: #666;
-    cursor: not-allowed;
 }

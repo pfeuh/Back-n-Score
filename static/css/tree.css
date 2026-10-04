@@ -40,13 +40,9 @@
     background-color: #121212;
 }
 
-/* Forçage global et robuste de la taille sur TOUS les éléments textuels de sélection (morceaux, instruments, partitions on the fly) */
+/* Forçage de la grande taille STRICTEMENT confiné à l'intérieur de la pop-up de l'arbre */
 #tree-container *, 
-#tree-popup-content *,
-.item-row,
-.instrument-item, /* Sélecteur potentiel d'instruments */
-li, a, span, div {
-    /* On applique la grande taille mais on évite de casser les 'display' structurels importants */
+#tree-popup-content * {
     font-size: 36px !important;
 }
 
