@@ -8,6 +8,8 @@ import sys
 import json
 import subprocess
 import shutil
+import pty
+import select
 
 # --- CONFIGURATION DES REPERTOIRES DE BASE ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -76,6 +78,35 @@ PLAYER_ADDR = (CONFIG.get("PLAYER_IP", "127.0.0.1"), CONFIG.get("PLAYER_PORT", 9
 udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 
+# --- GESTION DU TERMINAL VIRTUEL (PTY) ---
+master_fd = None
+slave_fd = None
+child_pid = None
+
+def start_shell():
+    global master_fd, slave_fd, child_pid
+    try:
+        master_fd, slave_fd = pty.openpty()
+        child_pid = os.fork()
+        if child_pid == 0:
+            # Enfant : lance bash
+            os.setsid()
+            os.dup2(slave_fd, 0)
+            os.dup2(slave_fd, 1)
+            os.dup2(slave_fd, 2)
+            os.close(master_fd)
+            os.close(slave_fd)
+            os.execve("/bin/bash", ["bash"], os.environ)
+        else:
+            # Parent
+            os.close(slave_fd)
+    except Exception as e:
+        print(f"[Terminal] Impossible de démarrer le pty (normal sous Windows en dev) : {e}")
+
+# Lancement du shell au démarrage
+start_shell()
+
+
 # --- FONCTIONS UTILITAIRES ---
 
 def get_all_local_ips():
@@ -113,7 +144,6 @@ def get_all_local_ips():
     # Nettoyage et dédoublonnage par adresse IP
     unique_ips = {}
     for ifname, ip in interfaces_found:
-        # On garde le vrai nom d'interface (ex: wlan0) si on l'a plutôt que "main"
         if ip not in unique_ips or unique_ips[ip] == "main":
             unique_ips[ip] = ifname
 
@@ -142,14 +172,12 @@ def generate_qr_codes():
         full_path = os.path.join(output_dir, filename)
         memo_path = full_path + ".txt"
         
-        # Anti-doublon carte SD
         if os.path.exists(full_path) and os.path.exists(memo_path):
             with open(memo_path, 'r', encoding='utf-8') as f:
                 if f.read().strip() == url:
                     print(f"[Réseau] QR Code {filename} déjà à jour pour {url}.")
                     return
 
-        # Écriture
         qr = qrcode.QRCode(version=1, error_correction=qrcode.constants.ERROR_CORRECT_L, box_size=10, border=4)
         qr.add_data(url)
         qr.make(fit=True)
@@ -164,14 +192,12 @@ def generate_qr_codes():
             pass
         print(f"[Réseau] QR Code {filename} MIS À JOUR -> {url}")
 
-    # Récupération des réseaux actifs
     networks = get_all_local_ips()
     
     if not networks:
         print("[Réseau] Aucune IP locale trouvée. Pas de QR code.")
         return
 
-    # CAS 1 : Une seule IP disponible (ton PC de dev, ou la Pi en mode solo)
     if len(networks) == 1:
         ifname, ip = networks[0]
         url = f"{protocol}://{ip}:{port}"
@@ -180,13 +206,10 @@ def generate_qr_codes():
         create_qr_if_changed(url, CONFIG["QR_CODE_LAN_FILE"])
         return
 
-    # CAS 2 : Multi-réseau (Ta Raspberry Pi avec wlan0 + eth0 actifs)
     for ifname, ip in networks:
         url = f"{protocol}://{ip}:{port}"
-        # Cible le Wi-Fi (wlan, wl, ou le point d'accès)
         if "wlan" in ifname or "wl" in ifname:
             create_qr_if_changed(url, CONFIG["QR_CODE_WIFI_FILE"])
-        # Cible le filaire (eth, enp, ext)
         else:
             create_qr_if_changed(url, CONFIG["QR_CODE_LAN_FILE"])
 
@@ -207,7 +230,7 @@ def save_last_track_dir(name):
             with open(LAST_TRACK_DIRNAME, 'w', encoding='utf-8') as f:
                 f.write(name)
             try:
-                os.sync()  # Force l'écriture physique immédiate sur la SD / Disque
+                os.sync()
             except AttributeError:
                 pass
 
@@ -229,7 +252,6 @@ def load_last_track_dir():
 AVAILABLE_INSTRUMENTS = []
 
 def update_available_instruments(loc):
-    """Scan le dossier et met à jour la liste globale"""
     global AVAILABLE_INSTRUMENTS
     if not loc:
         AVAILABLE_INSTRUMENTS = []
@@ -303,6 +325,62 @@ def qrcode():
 @app.route('/training')
 def training(): 
     return send_from_directory(WEB_DIR, 'training.html')
+
+# --- ROUTES DU TERMINAL WEB ---
+@app.route('/admin/terminal')
+def terminal_page():
+    user_agent = request.headers.get('User-Agent', '')
+    # Si c'est une vieille tablette Android 3 ou 4, on bloque direct du côté serveur
+    if 'Android 3' in user_agent or 'Android 4' in user_agent or 'Android/3' in user_agent or 'Android/4' in user_agent:
+        return """
+        <!DOCTYPE html>
+        <html lang="fr">
+        <head>
+            <meta charset="UTF-8">
+            <title>Terminal Incompatible</title>
+            <style>
+                body { background: #000; color: #ff5252; font-family: sans-serif; text-align: center; padding-top: 50px; }
+                h2 { color: #ffca28; }
+            </style>
+        </head>
+        <body>
+            <h2>Appareil non compatible</h2>
+            <p>Le terminal d'administration nécessite un navigateur moderne (PC ou smartphone récent).</p>
+            <p>Il ne peut pas fonctionner sur cette vieille tablette.</p>
+        </body>
+        </html>
+        """, 200
+        
+    return send_from_directory(WEB_DIR, 'terminal.html')
+
+@app.route('/admin/terminal/exec', methods=['POST'])
+def terminal_exec():
+    global master_fd
+    if master_fd is None:
+        return jsonify({'output': "\r\nErreur : Le terminal pty n'est pas disponible (environnement non Linux).\r\n"})
+    
+    data = request.json or {}
+    cmd = data.get('command', '') + '\n'
+    
+    try:
+        os.write(master_fd, cmd.encode('utf-8'))
+    except Exception as e:
+        return jsonify({'output': f"\r\nErreur d'écriture : {e}\r\n"})
+    
+    output = ""
+    while True:
+        r, w, e = select.select([master_fd], [], [], 0.1)
+        if not r:
+            break
+        try:
+            data_read = os.read(master_fd, 1024)
+            if not data_read:
+                break
+            output += data_read.decode('utf-8', errors='ignore')
+        except OSError:
+            break
+            
+    return jsonify({'output': output})
 
 @app.route('/static/<path:path>')
 def send_static(path): 
@@ -398,10 +476,8 @@ def serve_scores(filename):
 @app.route('/api/admin/refresh', methods=['POST'])
 def admin_refresh():
     try:
-        # Résolution du chemin absolu du script basé sur l'emplacement actuel de l'application
         script_path = os.path.join(BASE_DIR, 'tools', 'updateDatabase.py')
         
-        # Vérification préventive pour éviter les comportements indéterminés de subprocess
         if not os.path.exists(script_path):
             print(f"Erreur : Le script est introuvable au chemin {script_path}")
             return jsonify({"success": False, "message": "Le script de mise à jour est introuvable."}), 404
@@ -424,13 +500,11 @@ def admin_refresh():
 
 @app.route('/api/admin/save_mp3_types', methods=['POST'])
 def save_mp3_types():
-    """Reçoit la liste ordonnée des priorités MP3 depuis l'interface admin et l'enregistre"""
     try:
         priorities = request.json
         if not isinstance(priorities, list):
             return jsonify({"status": "error", "message": "Format de données invalide (un tableau est attendu)."}), 400
         
-        # Création du dossier server_data s'il n'existe pas encore
         os.makedirs(DATA_DIR, exist_ok=True)
         
         file_path = os.path.join(DATA_DIR, 'mp3_types.json')
@@ -438,7 +512,7 @@ def save_mp3_types():
             json.dump(priorities, f, indent=4, ensure_ascii=False)
             
         try:
-            os.sync()  # Sécurité pour l'écriture sur Raspberry Pi / carte SD
+            os.sync()
         except AttributeError:
             pass
             
@@ -459,36 +533,29 @@ def admin_crud():
     location = data['location'].strip('/')
     target_path = os.path.join(DB_DIR, location)
 
-    # Fonction interne pour formater en CamelCase robuste pour les dossiers physiques
     def to_camel_case(s):
         import re
         s = s.translate(str.maketrans("ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝàáâãäåæçèéêëìíîïðñòóôõöøùúûüýÿ", 
-                                      "AAAAAAECEEEEIIIIDNOOOOOOUUUUYaaaaaaaeceeeeiiiidnoooooouuuuyy"))
+                                    "AAAAAAECEEEEIIIIDNOOOOOOUUUUYaaaaaaaeceeeeiiiidnoooooouuuuyy"))
         words = re.findall(r'[a-zA-Z0-9]+', s)
         if not words: return ""
         return words[0].lower() + "".join(w.capitalize() for w in words[1:])
 
-    # --- 1. ACTION : CREATE ---
     if action == 'create':
         title = data.get('title')
         if not title:
             return jsonify({"status": "error", "message": "Titre propre manquant."}), 400
         try:
             os.makedirs(target_path, exist_ok=True)
-            
-            # Création du fichier trackname.txt encodé en UTF-8
             trackname_file = os.path.join(target_path, 'trackname.txt')
             with open(trackname_file, 'w', encoding='utf-8') as f:
                 f.write(title)
-                
             return jsonify({"status": "success", "message": "Dossier et fichier trackname créés."}), 200
         except Exception as e:
             return jsonify({"status": "error", "message": str(e)}), 500
 
-    # --- 2. ACTION : UPDATE ---
     elif action == 'update':
         if 'new_location' in data:
-            # Cas A : Renommer ou déplacer physiquement n'importe quel dossier (étagère, livre ou dossier track)
             new_location = data['new_location'].strip('/')
             destination_path = os.path.join(DB_DIR, new_location)
             
@@ -504,7 +571,6 @@ def admin_crud():
                 return jsonify({"status": "error", "message": str(e)}), 500
                 
         elif 'new_title' in data:
-            # Cas B : Modifier UNIQUEMENT le contenu textuel de trackname.txt (Le titre affiché de la chanson)
             new_title = data['new_title']
             if not os.path.exists(target_path):
                 return jsonify({"status": "error", "message": f"Le dossier ciblé n'existe pas ({location})."}), 400
@@ -525,7 +591,6 @@ def admin_crud():
         else:
             return jsonify({"status": "error", "message": "Sous-action update non reconnue (fournir new_location ou new_title)."}), 400
 
-    # --- 3. ACTION : DELETE ---
     elif action == 'delete':
         if not os.path.exists(target_path):
             return jsonify({"status": "error", "message": "L'élément à supprimer n'existe pas."}), 400
@@ -548,7 +613,6 @@ if __name__ == '__main__':
     port = CONFIG.get("PORT", 8000)
     debug = CONFIG.get("DEBUG_MODE", False)
     
-    # Détection intelligente corrigée
     generate_qr_codes()
     
     print(f"Démarrage du serveur Back'n Score (Hôte: {host}:{port})")

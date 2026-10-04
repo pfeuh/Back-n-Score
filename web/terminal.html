@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Terminal Raspberry Pi</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            color: #00ff00;
+            font-family: monospace;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+        #output {
+            flex-grow: 1;
+            white-space: pre-wrap;
+            overflow-y: auto;
+            background: #111;
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .input-line {
+            display: flex;
+            align-items: center;
+        }
+        .prompt {
+            color: #ffca28;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        #command-input {
+            flex-grow: 1;
+            background: #000;
+            border: 1px solid #555;
+            color: #fff;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 16px;
+            outline: none;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="terminal-container" style="display: flex; flex-direction: column; height: 100%; flex-grow: 1;">
+        <div id="output">Connexion au terminal Raspberry Pi...
+</div>
+        <div class="input-line">
+            <span class="prompt">pi@backnscore:~$</span>
+            <input type="text" id="command-input" autofocus autocomplete="off" autocapitalize="off">
+        </div>
+    </div>
+
+    <script>
+        const outputDiv = document.getElementById('output');
+        const inputField = document.getElementById('command-input');
+
+        sendCmd("");
+
+        inputField.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                const cmd = inputField.value;
+                outputDiv.textContent += "pi@backnscore:~$ " + cmd + "\n";
+                inputField.value = "";
+                sendCmd(cmd);
+            }
+        });
+
+        function sendCmd(cmd) {
+            fetch('/admin/terminal/exec', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({command: cmd})
+            })
+            .then(res => res.json())
+            .then(data => {
+                let text = data.output;
+                
+                // Nettoyage des séquences ANSI et des retours chariot
+                text = text.replace(/\x1b\[[0-9;]*[a-zA-Z]/g, '');
+                text = text.replace(/\r\n/g, '\n').replace(/\r/g, '');
+                
+                outputDiv.textContent += text;
+                outputDiv.scrollTop = outputDiv.scrollHeight;
+            })
+            .catch(err => {
+                outputDiv.textContent += "\nErreur de communication avec le serveur.\n";
+            });
+        }
+    </script>
+</body>
+</html>
