@@ -2,182 +2,122 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bn'S QRcode</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bn'S QR Codes</title>
     <style>
-        :root {
-            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1e2f 100%);
-            --card-bg: #24243a;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --accent-wifi: #38bdf8;
-            --accent-lan: #4ade80;
-            --border-radius: 16px;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background: var(--bg-gradient);
-            color: var(--text-main);
+        html, body {
             margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-        }
-
-        /* En-tête typé application de musique */
-        .brand {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        .brand h1 {
-            font-size: 2.5rem;
-            font-weight: 800;
-            letter-spacing: -0.05em;
-            margin: 0 0 8px 0;
-            background: linear-gradient(to right, #ffffff, #94a3b8);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .brand h1 span {
-            background: linear-gradient(to right, var(--accent-wifi), #a855f7);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .brand p {
-            color: var(--text-muted);
-            font-size: 1rem;
-            margin: 0;
-            max-width: 460px;
-            line-height: 1.5;
-        }
-
-        /* Grille des cartes */
-        .qr-container {
-            display: flex;
-            gap: 24px;
-            flex-wrap: wrap;
-            justify-content: center;
+            padding: 0;
             width: 100%;
-            max-width: 760px;
-        }
-
-        /* Cartes au look "Studio / Matériel" */
-        .qr-card {
-            background: var(--card-bg);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: var(--border-radius);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            padding: 30px 24px;
-            text-align: center;
-            flex: 1;
-            min-width: 280px;
-            max-width: 340px;
-            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
-            position: relative;
+            height: 100%;
+            background-color: #000;
             overflow: hidden;
         }
 
-        /* Effets de focus subtils selon le type */
-        .qr-card.wifi-card:hover {
-            border-color: rgba(56, 189, 248, 0.3);
-            box-shadow: 0 10px 30px rgba(56, 189, 248, 0.1);
-            transform: translateY(-2px);
+        .container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background-image: url('/static/img/splash.jpg');
+            background-repeat: no-repeat;
+            background-position: center center;
+            -webkit-background-size: contain;
+            background-size: contain; 
         }
 
-        .qr-card.lan-card:hover {
-            border-color: rgba(74, 222, 128, 0.3);
-            box-shadow: 0 10px 30px rgba(74, 222, 128, 0.1);
-            transform: translateY(-2px);
+        .menu {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            width: 90%;
+            max-width: 380px;
+            margin: 0 auto;
+            transform: translateY(-50%);
+            text-align: center;
+            z-index: 100;
         }
 
-        /* Badges techniques */
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 4px 12px;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-            margin-bottom: 20px;
-        }
-        
-        .wifi-card .badge {
-            background: rgba(56, 189, 248, 0.1);
-            color: var(--accent-wifi);
-        }
-        
-        .lan-card .badge {
-            background: rgba(74, 222, 128, 0.1);
-            color: var(--accent-lan);
+        .qr-row {
+            text-align: center;
         }
 
-        .qr-card h2 {
-            font-size: 1.3rem;
-            font-weight: 700;
-            margin: 0 0 20px 0;
+        /* Cartes toujours empilées verticalement pour rester dans le splash screen */
+        .qr-card {
+            display: block;
+            width: 100%;
+            max-width: 340px;
+            padding: 8px 10px;
+            margin: 0 auto 12px auto;
+            box-sizing: border-box;
+            text-align: center;
         }
 
-        /* Conteneur d'image pour faire ressortir le QR Code blanc sur fond sombre */
+        .qr-card:last-child {
+            margin-bottom: 0;
+        }
+
+        .qr-card h3 {
+            font-family: sans-serif;
+            font-size: 15px;
+            font-weight: bold;
+            margin: 0 0 4px 0;
+            text-shadow: 1px 1px 3px #000;
+        }
+
+        .wifi-card h3 { color: #38bdf8; }
+        .lan-card h3 { color: #4ade80; }
+
+        /* URL en 16px sur une seule ligne */
+        .qr-card .url-text {
+            font-family: monospace;
+            font-size: 16px;
+            font-weight: bold;
+            color: #ffffff;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 6px 10px;
+            border-radius: 4px;
+            margin: 0 0 6px 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Le fond blanc obligatoire pour le scan du QR code */
         .qr-wrapper {
             background: #ffffff;
-            padding: 16px;
-            border-radius: 12px;
+            padding: 6px;
+            border-radius: 6px;
             display: inline-block;
-            margin-bottom: 20px;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
 
+        /* QR code optimisé */
         .qr-card img {
             width: 180px;
             height: 180px;
             display: block;
         }
-
-        .qr-card p {
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            line-height: 1.5;
-            margin: 0;
-            padding: 0 10px;
-        }
     </style>
 </head>
 <body>
 
-    <div class="brand">
-        <h1>Back'n <span>Score</span></h1>
-        <p>Sélectionnez votre mode d'accès pour charger le pupitre et synchroniser vos partitions.</p>
-    </div>
+    <div class="container">
+        <div class="menu">
+            <div class="qr-row">
+                
+                {% for net in networks %}
+                <div class="qr-card {{ net.type }}-card">
+                    <h3>{{ net.title }}</h3>
+                    <p class="url-text">{{ net.url }}</p>
+                    <div class="qr-wrapper">
+                        <img src="/static/{{ net.filename }}" alt="{{ net.title }}">
+                    </div>
+                </div>
+                {% endfor %}
 
-    <div class="qr-container">
-        
-        <div class="qr-card wifi-card">
-            <span class="badge">Wireless AP</span>
-            <h2>Réseau Wi-Fi</h2>
-            <div class="qr-wrapper">
-                <img src="/static/qrcode_wifi.png" alt="QR Code Connexion Wi-Fi">
             </div>
-            <p>Idéal en mobilité. Connectez votre tablette directement sur le point d'accès Wi-Fi de la borne.</p>
         </div>
-
-        <div class="qr-card lan-card">
-            <span class="badge">Ethernet LAN</span>
-            <h2>Réseau Filaire</h2>
-            <div class="qr-wrapper">
-                <img src="/static/qrcode_lan.png" alt="QR Code Connexion Filaire">
-            </div>
-            <p>Idéal pour le développement ou les répétitions maison. Passe par le routeur de votre box locale.</p>
-        </div>
-
     </div>
 
 </body>

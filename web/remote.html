@@ -17,31 +17,28 @@
             color: #FFFFFF;
             font-family: sans-serif;
             overflow: hidden;
-            height: 100vh;
-            height: -webkit-fill-available;
+            height: 100%;
         }
 
-        body {
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* --- Barre de transport ultra-robuste (Table Layout compatible Android 4) --- */
+        /* --- Barre de transport compacte ajustée --- */
         #transport-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 124px;
             background-color: #1e1e1e;
             border-bottom: 2px solid #333;
-            padding: 10px;
-            flex-shrink: 0;
+            padding: 5px 6px;
             z-index: 10;
+            font-size: 0; /* Annule les espaces blancs entre les inline-block */
         }
 
         .transport-row {
-            display: table;
             width: 100%;
-            table-layout: fixed;
-            border-collapse: separate;
-            border-spacing: 8px 0; /* Espacement horizontal entre les boutons */
-            margin-bottom: 8px;
+            height: 54px;
+            margin-bottom: 6px;
+            white-space: nowrap;
         }
 
         .transport-row:last-child {
@@ -57,22 +54,27 @@
             cursor: pointer;
             outline: none;
             text-align: center;
-            white-space: nowrap;
-            display: table-cell;
+            display: inline-block;
             vertical-align: middle;
-            height: 54px; /* Hauteur générique unifiée et confortable */
+            height: 54px;
+            width: 23.5%;
+            margin-right: 2%;
+            font-size: 16px;
+        }
+
+        .transport-btn:nth-child(4) {
+            margin-right: 0;
         }
 
         .transport-btn:active {
             background-color: #555;
         }
 
+        /* Ligne 1 : Stop, Play, Mode (Jump/Set), Menu */
         .transport-btn.stop {
             background-color: #c0392b;
             border-color: #e74c3c;
-            width: 37.5%; /* 3 parts sur 8 */
         }
-
         .transport-btn.stop:active {
             background-color: #e74c3c;
         }
@@ -80,22 +82,41 @@
         .transport-btn.play {
             background-color: #2c3e50;
             border-color: #34495e;
-            width: 37.5%; /* 3 parts sur 8 */
         }
-
         .transport-btn.play:active {
             background-color: #1a252f;
+        }
+
+        .transport-btn.mode-toggle {
+            background-color: #7f8c8d;
+            border-color: #95a5a6;
+        }
+        /* La bascule reste grise, mais on peut juste l'assombrir ou garder la même couleur de base neutre */
+        .transport-btn.mode-toggle.active-set {
+            background-color: #596566; /* Un gris légèrement différent pour montrer qu'il est engagé sans crier au feu */
+            border-color: #7f8c8d;
         }
 
         .transport-btn.menu {
             background-color: #4f4f4f;
             border-color: #666;
-            width: 25%; /* 2 parts sur 8 */
+        }
+
+        /* Ligne 2 : Les 4 locators (1, 2, 3, 4) */
+        .transport-btn.locator {
+            background-color: #2980b9;
+            border-color: #3498db;
+            font-size: 18px;
+        }
+
+        /* Seuls les locators passent en rouge vif quand le mode SET est actif */
+        .transport-btn.locator.active-set {
+            background-color: #c0392b;
+            border-color: #e74c3c;
         }
 
         /* --- Icônes en pur CSS (Compatibles Android 4) --- */
 
-        /* Icône STOP : Carré plein */
         .stop-icon {
             display: inline-block;
             width: 18px;
@@ -104,7 +125,6 @@
             vertical-align: middle;
         }
 
-        /* Icône PLAY/PAUSE : 2 barres + triangle parfaitement espacés */
         .play-pause-icon {
             display: inline-block;
             vertical-align: middle;
@@ -119,7 +139,7 @@
             background: #FFF;
             position: relative;
             vertical-align: middle;
-            box-shadow: 6px 0 0 #FFF; /* 2ème barre collée à 6px */
+            box-shadow: 6px 0 0 #FFF;
         }
 
         .triangle-right {
@@ -130,10 +150,9 @@
             border-bottom: 9px solid transparent;
             border-left: 14px solid #FFF;
             vertical-align: middle;
-            margin-left: 5px; /* Espace propre après la shadow de la 2ème barre */
+            margin-left: 5px;
         }
 
-        /* Icône MENU : 3 barres horizontales */
         .hamburger-icon {
             display: inline-block;
             width: 22px;
@@ -142,52 +161,30 @@
             position: relative;
             vertical-align: middle;
             box-shadow: 0 -7px 0 #FFF, 0 7px 0 #FFF;
-            margin: 7px 0;
         }
 
-        .locator-group {
-            display: table-cell;
-            width: 25%;
-            vertical-align: top;
-        }
-
-        .locator-jump {
-            background-color: #2980b9;
-            border-color: #3498db;
-            height: 54px;
-            font-size: 18px;
-            width: 100%;
-            display: block;
-            border-radius: 8px;
-            border: 1px solid #3498db;
-            color: #FFF;
-            font-weight: bold;
-            text-align: center;
-            cursor: pointer;
-        }
-
-        .locator-set {
-            background-color: #7f8c8d;
-            border-color: #95a5a6;
-            height: 54px;
-            font-size: 16px;
-            width: 100%;
-            display: block;
-            margin-bottom: 4px;
-            border-radius: 8px;
-            border: 1px solid #95a5a6;
-            color: #FFF;
-            font-weight: bold;
-            text-align: center;
-            cursor: pointer;
+        /* --- Conteneur de l'arbre --- */
+        #tree-container {
+            position: absolute !important;
+            top: 124px !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            width: 100% !important;
+            overflow-y: scroll !important;
+            -webkit-overflow-scrolling: touch;
+            background-color: #121212;
+            flex-grow: unset !important;
+            z-index: 1;
         }
     </style>
 </head>
 <body>
 
-    <!-- Barre de transport -->
+    <!-- Barre de transport compacte -->
     <div id="transport-bar">
-        <div class="transport-row main-controls">
+        <!-- Ligne 1 : Stop, Play, Toggle Mode, Menu -->
+        <div class="transport-row">
             <button class="transport-btn stop" onclick="sendTransport('stop')"><span class="stop-icon"></span></button>
             <button class="transport-btn play" onclick="sendTransport('play')">
                 <span class="play-pause-icon">
@@ -195,25 +192,15 @@
                     <span class="triangle-right"></span>
                 </span>
             </button>
+            <button id="btn-mode" class="transport-btn mode-toggle" onclick="toggleLocatorMode()">Jump</button>
             <button class="transport-btn menu" onclick="sendMenu()"><span class="hamburger-icon"></span></button>
         </div>
+        <!-- Ligne 2 : Les 4 Locators uniformes -->
         <div class="transport-row">
-            <div class="locator-group">
-                <button class="locator-set" onclick="sendSetLocator(1)">Set 1</button>
-                <button class="locator-jump" onclick="sendLocator(1)">Go 1</button>
-            </div>
-            <div class="locator-group">
-                <button class="locator-set" onclick="sendSetLocator(2)">Set 2</button>
-                <button class="locator-jump" onclick="sendLocator(2)">Go 2</button>
-            </div>
-            <div class="locator-group">
-                <button class="locator-set" onclick="sendSetLocator(3)">Set 3</button>
-                <button class="locator-jump" onclick="sendLocator(3)">Go 3</button>
-            </div>
-            <div class="locator-group">
-                <button class="locator-set" onclick="sendSetLocator(4)">Set 4</button>
-                <button class="locator-jump" onclick="sendLocator(4)">Go 4</button>
-            </div>
+            <button class="transport-btn locator" onclick="handleLocator(1)">1</button>
+            <button class="transport-btn locator" onclick="handleLocator(2)">2</button>
+            <button class="transport-btn locator" onclick="handleLocator(3)">3</button>
+            <button class="transport-btn locator" onclick="handleLocator(4)">4</button>
         </div>
     </div>
 
@@ -240,6 +227,35 @@
         });
 
         var old_track_location = null;
+
+        // État de la bascule (false = Jump, true = Set)
+        var isSetMode = false;
+
+        function setLocatorMode(active) {
+            isSetMode = active;
+            var modeBtn = document.getElementById('btn-mode');
+            var locatorBtns = document.getElementsByClassName('locator');
+
+            if (isSetMode) {
+                modeBtn.innerText = "Set";
+                modeBtn.classList.add('active-set');
+                // Seuls les locators passent en rouge
+                for (var i = 0; i < locatorBtns.length; i++) {
+                    locatorBtns[i].classList.add('active-set');
+                }
+            } else {
+                modeBtn.innerText = "Jump";
+                modeBtn.classList.remove('active-set');
+                // Remet les locators en bleu normal
+                for (var i = 0; i < locatorBtns.length; i++) {
+                    locatorBtns[i].classList.remove('active-set');
+                }
+            }
+        }
+
+        function toggleLocatorMode() {
+            setLocatorMode(!isSetMode);
+        }
 
         function trackChanged() {
             var changed = (old_track_location != track_location.get());
@@ -311,17 +327,16 @@
             sendAudioCommand('menu');
         }
 
-        function sendLocator(num) {
+        function handleLocator(num) {
             var letter = locatorMap[num];
             if (letter) {
-                sendAudioCommand('goto_' + letter);
-            }
-        }
-
-        function sendSetLocator(num) {
-            var letter = locatorMap[num];
-            if (letter) {
-                sendAudioCommand('set_' + letter);
+                if (isSetMode) {
+                    sendAudioCommand('set_' + letter);
+                    // Repasse automatiquement en mode Jump après un set
+                    setLocatorMode(false);
+                } else {
+                    sendAudioCommand('goto_' + letter);
+                }
             }
         }
 

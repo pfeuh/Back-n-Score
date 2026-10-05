@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from flask import Flask, request, jsonify, send_file, send_from_directory
+from flask import Flask, request, jsonify, send_file, send_from_directory, render_template
 import socket
 import os
 import sys
@@ -128,7 +128,7 @@ def get_all_local_ips():
     except Exception:
         pass
 
-    # Étape 2 : On scanne via la commande système 'ip' pour choper les autres interfaces (comme le point d'accès wlan0)
+    # Étape 2 : On scanne via la commande système 'ip' pour choper les autres interfaces
     try:
         output = subprocess.check_output(["ip", "-o", "-4", "addr", "show"]).decode()
         for line in output.split('\n'):
@@ -198,20 +198,11 @@ def generate_qr_codes():
         print("[Réseau] Aucune IP locale trouvée. Pas de QR code.")
         return
 
-    if len(networks) == 1:
-        ifname, ip = networks[0]
-        url = f"{protocol}://{ip}:{port}"
-        print(f"[Réseau] Mode IP unique détecté ({ifname} : {ip}). Duplication du QR code pour compatibilité.")
-        create_qr_if_changed(url, CONFIG["QR_CODE_WIFI_FILE"])
-        create_qr_if_changed(url, CONFIG["QR_CODE_LAN_FILE"])
-        return
-
     for ifname, ip in networks:
         url = f"{protocol}://{ip}:{port}"
-        if "wlan" in ifname or "wl" in ifname:
-            create_qr_if_changed(url, CONFIG["QR_CODE_WIFI_FILE"])
-        else:
-            create_qr_if_changed(url, CONFIG["QR_CODE_LAN_FILE"])
+        is_wifi = "wlan" in ifname or "wl" in ifname
+        filename = CONFIG["QR_CODE_WIFI_FILE"] if is_wifi else CONFIG["QR_CODE_LAN_FILE"]
+        create_qr_if_changed(url, filename)
 
 def save_last_track_dir(name):
     """Écrit sur la SD UNIQUEMENT si la valeur a changé pour préserver la carte"""
@@ -276,7 +267,7 @@ def clear_terminal():
 
 trackLocation = load_last_track_dir()
 old_trackLocation = trackLocation
-app = Flask(__name__, static_folder=None)
+app = Flask(__name__, template_folder=WEB_DIR, static_folder=None)
 
 if trackLocation:
     update_available_instruments(trackLocation)
@@ -286,8 +277,9 @@ if trackLocation:
 
 @app.route('/get_available_instruments')
 def route_get_instruments():
-    global AVAILABLE_INSTRUMENTS
-    print(AVAILABLE_INSTRUMENTS)
+    global AVAILABLE_INSTRUMENTS, trackLocation
+    if trackLocation:
+        update_available_instruments(trackLocation)
     return jsonify(AVAILABLE_INSTRUMENTS)
 
 @app.route('/')
@@ -319,49 +311,65 @@ def admin():
     return send_from_directory(WEB_DIR, 'admin.html')
 
 @app.route('/qrcode')
-def qrcode(): 
-    return send_from_directory(WEB_DIR, 'qrcode.html')
+def qrcode_page(): 
+    output_dir = CONFIG.get("QR_CODE_DIR", os.path.join(BASE_DIR, 'static'))
+    networks = get_all_local_ips()
+    active_networks = []
+    
+    for ifname, ip in networks:
+        is_wifi = "wlan" in ifname or "wl" in ifname
+        card_type = "wifi" if is_wifi else "lan"
+        title = "Réseau Wi-Fi" if is_wifi else "Réseau Filaire"
+        filename = CONFIG["QR_CODE_WIFI_FILE"] if is_wifi else CONFIG["QR_CODE_LAN_FILE"]
+        
+        url = f"http://{ip}:{CONFIG.get('PORT', 8000)}"
+        memo_path = os.path.join(output_dir, filename + ".txt")
+        if os.path.exists(memo_path):
+            try:
+                with open(memo_path, 'r', encoding='utf-8') as f:
+                    url = f.read().strip()
+            except Exception:
+                pass
+                
+        # Évite d'ajouter deux fois le même type si plusieurs sous-interfaces du même type existent
+        if not any(n['type'] == card_type for n in active_networks):
+            active_networks.append({
+                "title": title,
+                "type": card_type,
+                "filename": filename,
+                "url": url
+            })
+            
+    return render_template('qrcode.html', networks=active_networks)
 
 @app.route('/training')
 def training(): 
     return send_from_directory(WEB_DIR, 'training.html')
 
-# --- ROUTES DU TERMINAL WEB ---
 @app.route('/admin/terminal')
 def terminal_page():
     user_agent = request.headers.get('User-Agent', '')
-    # Si c'est une vieille tablette Android 3 ou 4, on bloque direct du côté serveur
     if 'Android 3' in user_agent or 'Android 4' in user_agent or 'Android/3' in user_agent or 'Android/4' in user_agent:
         return """
         <!DOCTYPE html>
         <html lang="fr">
-        <head>
-            <meta charset="UTF-8">
-            <title>Terminal Incompatible</title>
-            <style>
-                body { background: #000; color: #ff5252; font-family: sans-serif; text-align: center; padding-top: 50px; }
-                h2 { color: #ffca28; }
-            </style>
-        </head>
-        <body>
+        <head><meta charset="UTF-8"><title>Terminal Incompatible</title></head>
+        <body style="background:#000;color:#ff5252;text-align:center;padding-top:50px;">
             <h2>Appareil non compatible</h2>
-            <p>Le terminal d'administration nécessite un navigateur moderne (PC ou smartphone récent).</p>
-            <p>Il ne peut pas fonctionner sur cette vieille tablette.</p>
+            <p>Le terminal nécessite un navigateur moderne.</p>
         </body>
         </html>
         """, 200
-        
     return send_from_directory(WEB_DIR, 'terminal.html')
 
 @app.route('/admin/terminal/exec', methods=['POST'])
 def terminal_exec():
     global master_fd
     if master_fd is None:
-        return jsonify({'output': "\r\nErreur : Le terminal pty n'est pas disponible (environnement non Linux).\r\n"})
+        return jsonify({'output': "\r\nErreur : Le terminal pty n'est pas disponible.\r\n"})
     
     data = request.json or {}
     cmd = data.get('command', '') + '\n'
-    
     try:
         os.write(master_fd, cmd.encode('utf-8'))
     except Exception as e:
@@ -379,7 +387,6 @@ def terminal_exec():
             output += data_read.decode('utf-8', errors='ignore')
         except OSError:
             break
-            
     return jsonify({'output': output})
 
 @app.route('/static/<path:path>')
@@ -419,14 +426,13 @@ def get_score_info():
     )
 
     if score_name is None:
-        return jsonify({"status": "error", "message": getScoreNameError() or "Même pas de message d'erreur pour le score!"}), 200
+        return jsonify({"status": "error", "message": getScoreNameError() or "Erreur score"}), 200
     else:
         nb_pages = getNbPages(track_path, score_name)
-        print(score_name, nb_pages)
         if nb_pages != 0:
             return jsonify({"status": "success", "score": score_name, "nb_pages": nb_pages}), 200
         else:
-            return jsonify({"status": "error", "message": getScoreNameError() or "Même pas de message d'erreur pour le nombre de pages!"}), 200
+            return jsonify({"status": "error", "message": getScoreNameError() or "Erreur pages"}), 200
 
 @app.route('/get_score')
 def get_score():
@@ -435,7 +441,6 @@ def get_score():
     page = request.args.get('page', '1')
     
     path = score_manager.resolve_score_path(DB_DIR, location, inst, page, is_obsolete())
-    
     if path and os.path.exists(path):
         return send_file(path)
     return "Aucun fichier trouvé", 404
@@ -444,14 +449,12 @@ def get_score():
 def audio_command():
     if request.method == 'OPTIONS':
         return 'ok', 200
-    print(f"{get_cid()}?")
     cmd = request.data
     udp_socket.sendto(cmd, PLAYER_ADDR)
     return "ok", 200
 
 @app.route('/sync_check')
 def sync_check():
-    print(f"{get_cid()}?")
     global trackLocation, old_trackLocation
     if old_trackLocation != trackLocation:
         save_last_track_dir(trackLocation)
@@ -477,50 +480,23 @@ def serve_scores(filename):
 def admin_refresh():
     try:
         script_path = os.path.join(BASE_DIR, 'tools', 'updateDatabase.py')
-        
         if not os.path.exists(script_path):
-            print(f"Erreur : Le script est introuvable au chemin {script_path}")
-            return jsonify({"success": False, "message": "Le script de mise à jour est introuvable."}), 404
+            return jsonify({"success": False, "message": "Script introuvable."}), 404
 
-        result = subprocess.run(['python3', script_path], 
-                                capture_output=True, 
-                                text=True, 
-                                cwd=BASE_DIR,
-                                check=True)
-        
-        print("Script Python exécuté avec succès:", result.stdout)
-        return jsonify({"success": True, "message": "Base de données synchronisée."}), 200
-
-    except subprocess.CalledProcessError as e:
-        print("Erreur lors de l'exécution du script Python (code retour non-nul):", e.stderr)
-        return jsonify({"success": False, "message": f"Erreur lors du scan du disque : {e.stderr or 'Erreur inconnue'}"}), 500
+        subprocess.run(['python3', script_path], capture_output=True, text=True, cwd=BASE_DIR, check=True)
+        return jsonify({"success": True, "message": "Base synchronisée."}), 200
     except Exception as e:
-        print("Exception générale levée dans Flask lors du refresh :", str(e))
-        return jsonify({"success": False, "message": f"Erreur système interne : {str(e)}"}), 500
+        return jsonify({"success": False, "message": str(e)}), 500
 
 @app.route('/api/admin/save_mp3_types', methods=['POST'])
 def save_mp3_types():
     try:
         priorities = request.json
-        if not isinstance(priorities, list):
-            return jsonify({"status": "error", "message": "Format de données invalide (un tableau est attendu)."}), 400
-        
         os.makedirs(DATA_DIR, exist_ok=True)
-        
-        file_path = os.path.join(DATA_DIR, 'mp3_types.json')
-        with open(file_path, 'w', encoding='utf-8') as f:
+        with open(os.path.join(DATA_DIR, 'mp3_types.json'), 'w', encoding='utf-8') as f:
             json.dump(priorities, f, indent=4, ensure_ascii=False)
-            
-        try:
-            os.sync()
-        except AttributeError:
-            pass
-            
-        print(f"[Admin] Priorités MP3 mises à jour avec succès dans {file_path}")
-        return jsonify({"status": "success", "message": "Priorités sauvegardées."}), 200
-
+        return jsonify({"status": "success"}), 200
     except Exception as e:
-        print(f"Erreur lors de l'enregistrement des priorités MP3 : {e}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/api/admin/crud', methods=['POST'])
@@ -533,24 +509,13 @@ def admin_crud():
     location = data['location'].strip('/')
     target_path = os.path.join(DB_DIR, location)
 
-    def to_camel_case(s):
-        import re
-        s = s.translate(str.maketrans("ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝàáâãäåæçèéêëìíîïðñòóôõöøùúûüýÿ", 
-                                    "AAAAAAECEEEEIIIIDNOOOOOOUUUUYaaaaaaaeceeeeiiiidnoooooouuuuyy"))
-        words = re.findall(r'[a-zA-Z0-9]+', s)
-        if not words: return ""
-        return words[0].lower() + "".join(w.capitalize() for w in words[1:])
-
     if action == 'create':
         title = data.get('title')
-        if not title:
-            return jsonify({"status": "error", "message": "Titre propre manquant."}), 400
         try:
             os.makedirs(target_path, exist_ok=True)
-            trackname_file = os.path.join(target_path, 'trackname.txt')
-            with open(trackname_file, 'w', encoding='utf-8') as f:
+            with open(os.path.join(target_path, 'trackname.txt'), 'w', encoding='utf-8') as f:
                 f.write(title)
-            return jsonify({"status": "success", "message": "Dossier et fichier trackname créés."}), 200
+            return jsonify({"status": "success"}), 200
         except Exception as e:
             return jsonify({"status": "error", "message": str(e)}), 500
 
@@ -558,54 +523,32 @@ def admin_crud():
         if 'new_location' in data:
             new_location = data['new_location'].strip('/')
             destination_path = os.path.join(DB_DIR, new_location)
-            
-            if not os.path.exists(target_path):
-                return jsonify({"status": "error", "message": f"Le dossier d'origine n'existe pas ({location})."}), 400
-                
             try:
                 os.makedirs(os.path.dirname(destination_path), exist_ok=True)
                 if os.path.normpath(target_path) != os.path.normpath(destination_path):
                     shutil.move(target_path, destination_path)
-                return jsonify({"status": "success", "message": "Dossier renommé/déplacé sur le disque avec succès.", "new_location": new_location}), 200
+                return jsonify({"status": "success"}), 200
             except Exception as e:
                 return jsonify({"status": "error", "message": str(e)}), 500
-                
         elif 'new_title' in data:
-            new_title = data['new_title']
-            if not os.path.exists(target_path):
-                return jsonify({"status": "error", "message": f"Le dossier ciblé n'existe pas ({location})."}), 400
-                
             try:
-                trackname_file = os.path.join(target_path, 'trackname.txt')
-                with open(trackname_file, 'w', encoding='utf-8') as f:
-                    f.write(new_title)
-                
-                try:
-                    os.sync()
-                except AttributeError:
-                    pass
-                    
-                return jsonify({"status": "success", "message": "Fichier trackname.txt mis à jour."}), 200
+                with open(os.path.join(target_path, 'trackname.txt'), 'w', encoding='utf-8') as f:
+                    f.write(data['new_title'])
+                return jsonify({"status": "success"}), 200
             except Exception as e:
                 return jsonify({"status": "error", "message": str(e)}), 500
-        else:
-            return jsonify({"status": "error", "message": "Sous-action update non reconnue (fournir new_location ou new_title)."}), 400
 
     elif action == 'delete':
-        if not os.path.exists(target_path):
-            return jsonify({"status": "error", "message": "L'élément à supprimer n'existe pas."}), 400
-            
         try:
             if os.path.isdir(target_path):
                 shutil.rmtree(target_path)
             else:
                 os.remove(target_path)
-            return jsonify({"status": "success", "message": "Supprimé avec succès."}), 200
+            return jsonify({"status": "success"}), 200
         except Exception as e:
             return jsonify({"status": "error", "message": str(e)}), 500
 
-    else:
-        return jsonify({"status": "error", "message": f"Action '{action}' inconnue."}), 400
+    return jsonify({"status": "error", "message": "Action inconnue."}), 400
 
 
 if __name__ == '__main__':
