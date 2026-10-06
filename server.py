@@ -59,8 +59,46 @@ def load_config():
 # Chargement de la configuration
 CONFIG = load_config()
 
-# Utilisation de CONFIG["DATABASE"] pour correspondre à ton JSON
-DB_DIR = CONFIG["DATABASE"]
+def get_current_db_dir():
+    """
+    1. Vérifie si le dossier database existe déjà dans /mnt/usbkey.
+    2. Sinon, monte directement /dev/sda1 (ou la première partition usb trouvée) sur /mnt/usbkey.
+    3. Met à jour et retourne le chemin valide.
+    """
+    config_db = CONFIG.get("DATABASE")
+    if config_db and os.path.isdir(config_db):
+        return config_db
+
+    # S'assure que le point de montage existe
+    os.makedirs("/mnt/usbkey", exist_ok=True)
+
+    # Si le dossier database est déjà physiquement accessible là, c'est bon
+    target_db = "/mnt/usbkey/database"
+    if os.path.isdir(target_db):
+        CONFIG["DATABASE"] = target_db
+        return target_db
+
+    # Sinon, on monte la clé automatiquement (ex: sda1)
+    try:
+        output = subprocess.check_output(["lsblk", "-rno", "NAME,TYPE"], text=True)
+        for line in output.splitlines():
+            parts = line.split()
+            if len(parts) == 2 and parts[1] == "part":
+                dev_name = f"/dev/{parts[0]}"
+                res = subprocess.run(["sudo", "mount", dev_name, "/mnt/usbkey"], capture_output=True)
+                if res.returncode == 0:
+                    break
+    except Exception:
+        pass
+
+    # Vérification finale après tentative de montage
+    if os.path.isdir(target_db):
+        CONFIG["DATABASE"] = target_db
+        return target_db
+
+    return config_db
+
+# Utilisation dynamique sécurisée
 LAST_TRACK_DIRNAME = os.path.join(SCRIPTS_DIR, CONFIG["LAST_TRACK_FILE"])
 
 # Ajout du dossier SCRIPT pour les imports du projet
@@ -89,7 +127,6 @@ def start_shell():
         master_fd, slave_fd = pty.openpty()
         child_pid = os.fork()
         if child_pid == 0:
-            # Enfant : lance bash
             os.setsid()
             os.dup2(slave_fd, 0)
             os.dup2(slave_fd, 1)
@@ -98,26 +135,17 @@ def start_shell():
             os.close(slave_fd)
             os.execve("/bin/bash", ["bash"], os.environ)
         else:
-            # Parent
             os.close(slave_fd)
     except Exception as e:
         print(f"[Terminal] Impossible de démarrer le pty (normal sous Windows en dev) : {e}")
 
-# Lancement du shell au démarrage
 start_shell()
 
 
 # --- FONCTIONS UTILITAIRES ---
 
 def get_all_local_ips():
-    """
-    Récupère de manière robuste toutes les adresses IP IPv4 locales actives.
-    Exclut l'interface loopback (127.0.0.1).
-    Retourne une liste de tuples : [('nom_interface', 'ip'), ...]
-    """
     interfaces_found = []
-    
-    # Étape 1 : On tente la méthode de la socket connectée (très fiable pour l'IP principale)
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect(("8.8.8.8", 80))
@@ -128,7 +156,6 @@ def get_all_local_ips():
     except Exception:
         pass
 
-    # Étape 2 : On scanne via la commande système 'ip' pour choper les autres interfaces
     try:
         output = subprocess.check_output(["ip", "-o", "-4", "addr", "show"]).decode()
         for line in output.split('\n'):
@@ -141,7 +168,6 @@ def get_all_local_ips():
     except Exception:
         pass
 
-    # Nettoyage et dédoublonnage par adresse IP
     unique_ips = {}
     for ifname, ip in interfaces_found:
         if ip not in unique_ips or unique_ips[ip] == "main":
@@ -150,11 +176,9 @@ def get_all_local_ips():
     return [(ifname, ip) for ip, ifname in unique_ips.items()]
 
 def generate_qr_codes():
-    """Génère intelligemment les QR codes selon les interfaces réseau disponibles"""
     try:
         import qrcode
     except ImportError:
-        print("Erreur : La bibliothèque 'qrcode' est introuvable. Exécute 'pip install qrcode[pil]'.")
         return
 
     output_dir = CONFIG.get("QR_CODE_DIR", os.path.join(BASE_DIR, 'static'))
@@ -164,8 +188,7 @@ def generate_qr_codes():
     if not os.path.exists(output_dir):
         try:
             os.makedirs(output_dir, exist_ok=True)
-        except Exception as e:
-            print(f"Impossible de créer le répertoire des QR Codes : {e}")
+        except Exception:
             return
 
     def create_qr_if_changed(url, filename):
@@ -175,7 +198,6 @@ def generate_qr_codes():
         if os.path.exists(full_path) and os.path.exists(memo_path):
             with open(memo_path, 'r', encoding='utf-8') as f:
                 if f.read().strip() == url:
-                    print(f"[Réseau] QR Code {filename} déjà à jour pour {url}.")
                     return
 
         qr = qrcode.QRCode(version=1, error_correction=qrcode.constants.ERROR_CORRECT_L, box_size=10, border=4)
@@ -190,12 +212,9 @@ def generate_qr_codes():
             os.sync()
         except AttributeError:
             pass
-        print(f"[Réseau] QR Code {filename} MIS À JOUR -> {url}")
 
     networks = get_all_local_ips()
-    
     if not networks:
-        print("[Réseau] Aucune IP locale trouvée. Pas de QR code.")
         return
 
     for ifname, ip in networks:
@@ -205,11 +224,11 @@ def generate_qr_codes():
         create_qr_if_changed(url, filename)
 
 def save_last_track_dir(name):
-    """Écrit sur la SD UNIQUEMENT si la valeur a changé pour préserver la carte"""
     if name is not None:
         name = name.strip()
+        if name.lower() == "none" or not name:
+            return
         current_saved = ""
-        
         if os.path.exists(LAST_TRACK_DIRNAME):
             try:
                 with open(LAST_TRACK_DIRNAME, 'r', encoding='utf-8') as f:
@@ -226,17 +245,23 @@ def save_last_track_dir(name):
                 pass
 
 def load_last_track_dir():
+    current_db = get_current_db_dir()
     if os.path.exists(LAST_TRACK_DIRNAME):
         try:
             with open(LAST_TRACK_DIRNAME, 'r', encoding='utf-8') as f:
                 last_track_path = f.read().strip()
-            full_dirname = os.path.join(DB_DIR, last_track_path)
-            if os.path.isdir(full_dirname):
-                return last_track_path
-            else:
-                print("not a valid dir!", full_dirname)
-        except Exception as e:
-            print("Erreur de lecture du fichier track:", e)
+            
+            if last_track_path and last_track_path.lower() != "none":
+                if os.path.isabs(last_track_path) and current_db:
+                    if last_track_path.startswith(current_db):
+                        last_track_path = os.path.relpath(last_track_path, current_db)
+                
+                if current_db and os.path.isdir(current_db):
+                    full_dirname = os.path.join(current_db, last_track_path)
+                    if os.path.isdir(full_dirname):
+                        return last_track_path
+        except Exception:
+            pass
     return None
 
 
@@ -244,11 +269,12 @@ AVAILABLE_INSTRUMENTS = []
 
 def update_available_instruments(loc):
     global AVAILABLE_INSTRUMENTS
-    if not loc:
+    current_db = get_current_db_dir()
+    if not loc or not current_db or not os.path.isdir(current_db):
         AVAILABLE_INSTRUMENTS = []
         return
 
-    full_path = os.path.join(DB_DIR, loc)
+    full_path = os.path.join(current_db, loc)
     if os.path.isdir(full_path):
         inst_list = []
         for f in os.listdir(full_path):
@@ -278,8 +304,14 @@ if trackLocation:
 @app.route('/get_available_instruments')
 def route_get_instruments():
     global AVAILABLE_INSTRUMENTS, trackLocation
+    current_db = get_current_db_dir()
+    if not trackLocation or not current_db or not os.path.isdir(current_db):
+        trackLocation = load_last_track_dir()
+    
     if trackLocation:
         update_available_instruments(trackLocation)
+    else:
+        AVAILABLE_INSTRUMENTS = []
     return jsonify(AVAILABLE_INSTRUMENTS)
 
 @app.route('/')
@@ -331,7 +363,6 @@ def qrcode_page():
             except Exception:
                 pass
                 
-        # Évite d'ajouter deux fois le même type si plusieurs sous-interfaces du même type existent
         if not any(n['type'] == card_type for n in active_networks):
             active_networks.append({
                 "title": title,
@@ -400,7 +431,15 @@ def send_json_data(path):
 @app.route('/get_score_info')
 def get_score_info():
     global trackLocation
+    
+    current_db = get_current_db_dir()
+    if not current_db or not os.path.isdir(current_db):
+        return jsonify({"status": "error", "message": "Clé USB absente"}), 400
+
     loc = request.args.get('loc')
+    if not loc or loc.strip() == "" or loc.lower() == "none":
+        loc = trackLocation or load_last_track_dir()
+
     instrument = request.args.get('instrument')
     voice = request.args.get('voice', 1, type=int)
     mode = request.args.get('mode', str(MODE_POPULAR))
@@ -408,12 +447,15 @@ def get_score_info():
     easy = request.args.get('easy', 'false') == '1'
     
     if loc:
-        track_path = os.path.join(DB_DIR, loc)
+        track_path = os.path.join(current_db, loc)
         trackLocation = loc
         save_last_track_dir(loc)
     else:
-        return jsonify({"status": "error", "message": "Location manquante"}), 400
+        return jsonify({"status": "error", "message": "Aucun morceau sélectionné"}), 400
         
+    if not os.path.isdir(track_path):
+        return jsonify({"status": "error", "message": "Dossier du morceau introuvable"}), 400
+
     score_name = getScoreName(
         track_path=track_path,
         instrument=instrument,
@@ -440,7 +482,11 @@ def get_score():
     inst = request.args.get('inst')
     page = request.args.get('page', '1')
     
-    path = score_manager.resolve_score_path(DB_DIR, location, inst, page, is_obsolete())
+    current_db = get_current_db_dir()
+    if not current_db or not os.path.isdir(current_db):
+        return "Clé USB absente", 404
+
+    path = score_manager.resolve_score_path(current_db, location, inst, page, is_obsolete())
     if path and os.path.exists(path):
         return send_file(path)
     return "Aucun fichier trouvé", 404
@@ -456,14 +502,20 @@ def audio_command():
 @app.route('/sync_check')
 def sync_check():
     global trackLocation, old_trackLocation
+    current_db = get_current_db_dir()
+    if not trackLocation or not current_db or not os.path.isdir(current_db):
+        trackLocation = load_last_track_dir()
     if old_trackLocation != trackLocation:
         save_last_track_dir(trackLocation)
         old_trackLocation = trackLocation
-    return f"{trackLocation}", 200, {'Content-Type': 'text/plain'}
+    return f"{trackLocation if trackLocation else ''}", 200, {'Content-Type': 'text/plain'}
 
 @app.route('/update_track', methods=['POST'])
 def update_track():
     global trackLocation
+    current_db = get_current_db_dir()
+    if not current_db or not os.path.isdir(current_db):
+        return jsonify({"status": "error", "message": "Clé USB absente"}), 400
     data = request.json
     if data and 'location' in data:
         trackLocation = data['location']
@@ -474,11 +526,17 @@ def update_track():
 
 @app.route('/scores/<path:filename>')
 def serve_scores(filename):
-    return send_from_directory(DB_DIR, filename)
+    current_db = get_current_db_dir()
+    if not current_db or not os.path.isdir(current_db):
+        return "Clé USB absente", 404
+    return send_from_directory(current_db, filename)
 
 @app.route('/api/admin/refresh', methods=['POST'])
 def admin_refresh():
     try:
+        current_db = get_current_db_dir()
+        if not current_db or not os.path.isdir(current_db):
+            return jsonify({"success": False, "message": "Clé USB absente."}), 404
         script_path = os.path.join(BASE_DIR, 'tools', 'updateDatabase.py')
         if not os.path.exists(script_path):
             return jsonify({"success": False, "message": "Script introuvable."}), 404
@@ -501,13 +559,17 @@ def save_mp3_types():
 
 @app.route('/api/admin/crud', methods=['POST'])
 def admin_crud():
+    current_db = get_current_db_dir()
+    if not current_db or not os.path.isdir(current_db):
+        return jsonify({"status": "error", "message": "Clé USB absente."}), 400
+
     data = request.json
     if not data or 'action' not in data or 'location' not in data:
         return jsonify({"status": "error", "message": "Paramètres manquants."}), 400
 
     action = data['action']
     location = data['location'].strip('/')
-    target_path = os.path.join(DB_DIR, location)
+    target_path = os.path.join(current_db, location)
 
     if action == 'create':
         title = data.get('title')
@@ -522,7 +584,7 @@ def admin_crud():
     elif action == 'update':
         if 'new_location' in data:
             new_location = data['new_location'].strip('/')
-            destination_path = os.path.join(DB_DIR, new_location)
+            destination_path = os.path.join(current_db, new_location)
             try:
                 os.makedirs(os.path.dirname(destination_path), exist_ok=True)
                 if os.path.normpath(target_path) != os.path.normpath(destination_path):
@@ -534,7 +596,7 @@ def admin_crud():
             try:
                 with open(os.path.join(target_path, 'trackname.txt'), 'w', encoding='utf-8') as f:
                     f.write(data['new_title'])
-                return jsonify({"status": "success"}), 200
+                return jsonify({"success": "success"}), 200
             except Exception as e:
                 return jsonify({"status": "error", "message": str(e)}), 500
 

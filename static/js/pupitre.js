@@ -2,15 +2,15 @@
 // ---*** Variables    ***---
 // ---********************---
 
-var DATA_TRACKS = null;               // supposed to be a constant
-var DATA_UI_POPULAR = null;           // supposed to be a constant
-var DATA_UI_CLASSIQUE = null;         // supposed to be a constant
-var MODE_POPULAR = 1;                 // supposed to be a constant
-var MODE_CLASSIQUE = 2;               // supposed to be a constant
+var DATA_TRACKS = null;             // supposed to be a constant
+var DATA_UI_POPULAR = null;         // supposed to be a constant
+var DATA_UI_CLASSIQUE = null;       // supposed to be a constant
+var MODE_POPULAR = 1;               // supposed to be a constant
+var MODE_CLASSIQUE = 2;             // supposed to be a constant
 var META_INSTRUMENTS = null;
 
-var content = null;                   // the <div> which receives all trees and scores
-var mode_div = null;                   // the <div> which receives all trees and scores
+var content = null;                 // the <div> which receives all trees and scores
+var mode_div = null;                // the <div> which receives all trees and scores
 
 // --- Variables synchronisées (via objects.js) ---
 
@@ -218,17 +218,38 @@ function instrumentChanged() {
 }
 
 function trackChanged(){
-    var changed = (old_track_location != track_location.get());
-    if(changed){
-        //~ console.log("track changed:", track_location.get());
-        old_track_location = track_location.get();
+    var current_loc = track_location.get();
+    
+    console.log("=== trackChanged() ===");
+    console.log("current_loc:", current_loc);
+    console.log("old_track_location:", old_track_location);
+
+    // Sécurité : si la location est vide ou nulle, on ne valide aucun changement
+    if (!current_loc || current_loc.trim() === "") {
+        console.log("trackChanged: location vide ou nulle, ignorée.");
+        return false;
     }
+    
+    var changed = (old_track_location != current_loc);
+    console.log("trackChanged: changed =", changed);
+    
+    if(changed){
+        console.log("-> Changement de track détecté de [" + old_track_location + "] vers [" + current_loc + "]");
+        old_track_location = current_loc;
+    }
+    
     return changed;
 }
 
 function checkUpdateScore(){
-    var track_changed =  trackChanged();
-    var instrument_changed =  instrumentChanged();
+    var current_loc = track_location.get();
+    // Protection absolue : interdiction absolue de lancer la mise à jour si le dossier n'est pas défini
+    if (!current_loc || current_loc.trim() === "") {
+        return;
+    }
+
+    var track_changed = trackChanged();
+    var instrument_changed = instrumentChanged();
 
     if(track_changed || instrument_changed){
         getScoreNameNbPages(); 

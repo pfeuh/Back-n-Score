@@ -1,4 +1,4 @@
 #!/bin/bash
-python3 updateDatabase.py
+python3 tools/updateDatabase.py
 pkill -f server.py
 python3 server.py &
