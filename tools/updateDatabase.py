@@ -153,7 +153,8 @@ def generate_track_tree():
 
         # 3. Indexation des dossiers valides (contenant trackname.txt)
         if "trackname.txt" in files:
-            relative_path = os.path.relpath(root, DATABASE_DIR)
+            # CORRECTION : Utilisation de realpath pour éviter les problèmes de résolution de liens symboliques
+            relative_path = os.path.relpath(os.path.realpath(root), os.path.realpath(DATABASE_DIR))
             
             # Recensement de tous les noms de base des PDF valides présents dans ce dossier
             valid_pdf_bases = {f[:-4] for f in files if f.endswith(".pdf")}
@@ -161,7 +162,6 @@ def generate_track_tree():
             # Nettoyage automatique des images orphelines (dont le PDF n'existe plus ou a été renommé)
             for f in files:
                 if f.endswith(".jpg") and "_p" in f:
-                    # CORRECTION ICI : rsplit("...", 1) coupe uniquement le dernier "_p" de la chaîne
                     img_instr = f.rsplit("_p", 1)[0]
                     if img_instr not in valid_pdf_bases:
                         try:
