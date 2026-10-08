@@ -26,7 +26,6 @@ function prepareTreeInterface(viewType) {
     var treeOverlay = document.getElementById('tree-popup-overlay');
     if (treeOverlay) treeOverlay.style.display = 'block';
 
-    // Bouton de fermeture global ✕ en haut à droite de la popup
     var closeBtn = document.createElement("div"); 
     closeBtn.className = "btn-cancel";
     closeBtn.innerText = "✕";
@@ -37,11 +36,10 @@ function prepareTreeInterface(viewType) {
     closeBtn.onclick = closeTreeView; 
     popupContent.appendChild(closeBtn);
 
-    // Conteneur principal unique de l'arbre (élargi et étendu vers le bas)
     var treeHost = document.createElement('div');
     treeHost.id = "tree-container";
     treeHost.style.position = "absolute";
-    treeHost.style.top = "40px"; /* Légèrement remonté pour gagner en hauteur */
+    treeHost.style.top = "40px";
     treeHost.style.bottom = "0"; 
     treeHost.style.left = "0";
     treeHost.style.right = "0";
@@ -51,29 +49,22 @@ function prepareTreeInterface(viewType) {
     popupContent.appendChild(treeHost);
 }
 
-function addTreeRow(text, onClick, isSelected, container, paddingLeft) {
+function addTreeRow(text, onClick, isSelected, container, indentLevel) {
     var div = document.createElement("div");
     div.className = "item-row";
-    div.style.display = "block";
-    div.style.width = "100%";
-    div.style.padding = "6px 12px"; /* Padding encore plus réduit (compact) */
-    if (paddingLeft) {
-        div.style.paddingLeft = paddingLeft + "px";
+    if (isSelected) {
+        div.className += " selected";
     }
-    div.style.borderBottom = "1px solid #333";
-    div.style.boxSizing = "border-box"; 
-    div.style.cursor = "pointer";
-    div.style.color = "#FFFFFF";
-    div.style.fontSize = "22px"; /* Taille de police augmentée à 22px */
-    div.style.whiteSpace = "nowrap"; 
+    
+    // Utilisation de setProperty avec 'important' pour contourner d'éventuels conflits CSS globaux
+    if (indentLevel) {
+        div.style.setProperty('padding-left', (12 + (indentLevel * 20)) + 'px', 'important');
+    }
     
     var cleanText = text.replace(/_/g, " ");
     div.innerHTML = isSelected ? "<b>" + cleanText + "</b>" : cleanText;
     
     if (isSelected) {
-        div.style.backgroundColor = "#444";
-        div.style.color = "#f1c40f";
-
         setTimeout(function() {
             div.scrollIntoView(false);
         }, 150); 
@@ -99,43 +90,31 @@ function loadView(viewType, path) {
     }
 }
 
-// Affichage des instruments du morceau courant regroupés par tonalité grâce à META_INSTRUMENTS (Compatible vieille tablette via XMLHttpRequest)
 function renderAltInstrumentTree(container) {
     container.innerHTML = "";
     document.body.classList.add('tree-instruments-open');
 
     var selectedInstrument = typeof current_instrument !== "undefined" ? current_instrument.get() : "";
 
-    // Titre de section
     var headerRow = document.createElement("div");
-    headerRow.style.backgroundColor = "#2a2a2a";
-    headerRow.style.borderBottom = "2px solid #444";
-    headerRow.style.color = "#f1c40f";
-    headerRow.style.fontWeight = "bold";
-    headerRow.style.padding = "8px 12px";
-    headerRow.style.fontSize = "22px";
-    headerRow.style.whiteSpace = "nowrap";
+    headerRow.className = "item-row header-row";
     headerRow.innerText = "📁 Instruments du morceau";
     container.appendChild(headerRow);
 
     var branchDiv = document.createElement("div");
-    branchDiv.style.display = "block";
     container.appendChild(branchDiv);
 
     var loadingRow = document.createElement("div");
-    loadingRow.style.padding = "10px 12px";
-    loadingRow.style.fontSize = "22px";
-    loadingRow.style.color = "#888";
+    loadingRow.className = "item-row loading-row";
     loadingRow.innerText = "Chargement des instruments...";
     branchDiv.appendChild(loadingRow);
 
-    // Utilisation de XMLHttpRequest pour compatibilité totale avec les anciens navigateurs
     var xhr = new XMLHttpRequest();
     xhr.open('GET', '/get_available_instruments', true);
     
     xhr.onreadystatechange = function() {
         if (xhr.readyState === 4) {
-            branchDiv.innerHTML = ""; // Nettoyer le chargement
+            branchDiv.innerHTML = ""; 
 
             var instruments = [];
             if (xhr.status === 200) {
@@ -148,54 +127,36 @@ function renderAltInstrumentTree(container) {
 
             if (!instruments || instruments.length === 0) {
                 var emptyRow = document.createElement("div");
-                emptyRow.style.padding = "10px 12px";
-                emptyRow.style.fontSize = "22px";
-                emptyRow.style.color = "#888";
+                emptyRow.className = "item-row empty-row";
                 emptyRow.innerText = "Aucun instrument trouvé pour ce morceau.";
                 branchDiv.appendChild(emptyRow);
                 return;
             }
 
             function getBaseInstrumentName(name) {
-                if (name.indexOf("easy") === 0 && name.length > 4) {
-                    name = name.substring(4);
-                }
-                if (name.lastIndexOf("solo") === name.length - 4 && name.length > 4) {
-                    name = name.substring(0, name.length - 4);
-                }
+                if (name.indexOf("easy") === 0 && name.length > 4) name = name.substring(4);
+                if (name.lastIndexOf("solo") === name.length - 4 && name.length > 4) name = name.substring(0, name.length - 4);
                 if (name.length > 0) {
                     var lastChar = name.charAt(name.length - 1);
-                    if (lastChar === '2' || lastChar === '3' || lastChar === '4') {
-                        name = name.substring(0, name.length - 1);
-                    }
+                    if (lastChar === '2' || lastChar === '3' || lastChar === '4') name = name.substring(0, name.length - 1);
                 }
                 return name;
             }
 
             var grouped = {};
-            for (var i = 0; i < QUARTES_ORDER.length; i++) {
-                grouped[QUARTES_ORDER[i]] = [];
-            }
+            for (var i = 0; i < QUARTES_ORDER.length; i++) grouped[QUARTES_ORDER[i]] = [];
             grouped["NP"] = [];
             grouped["AUTRES"] = [];
 
             for (var i = 0; i < instruments.length; i++) {
                 var instName = instruments[i];
                 var tona = "AUTRES";
-
                 var lookupName = instName;
                 if (typeof META_INSTRUMENTS !== "undefined") {
-                    if (!META_INSTRUMENTS[lookupName]) {
-                        lookupName = getBaseInstrumentName(instName);
-                    }
-                    if (META_INSTRUMENTS[lookupName]) {
-                        tona = META_INSTRUMENTS[lookupName][0];
-                    }
+                    if (!META_INSTRUMENTS[lookupName]) lookupName = getBaseInstrumentName(instName);
+                    if (META_INSTRUMENTS[lookupName]) tona = META_INSTRUMENTS[lookupName][0];
                 }
-
-                if (!grouped[tona]) {
-                    grouped[tona] = [];
-                }
+                if (!grouped[tona]) grouped[tona] = [];
                 grouped[tona].push(instName);
             }
 
@@ -211,14 +172,8 @@ function renderAltInstrumentTree(container) {
 
                 (function(tonName, listInsts) {
                     var subRow = document.createElement("div");
-                    subRow.style.backgroundColor = "#1f1f1f";
-                    subRow.style.color = "#FFF";
-                    subRow.style.padding = "6px 10px 6px 26px";
-                    subRow.style.borderBottom = "1px solid #333";
-                    subRow.style.cursor = "pointer";
-                    subRow.style.fontWeight = "500";
-                    subRow.style.fontSize = "22px";
-                    subRow.style.whiteSpace = "nowrap";
+                    subRow.className = "item-row tonalite-row";
+                    subRow.style.setProperty('padding-left', '26px', 'important');
                     subRow.innerText = "🎵 " + tonName + " (" + listInsts.length + ")";
                     branchDiv.appendChild(subRow);
 
@@ -228,32 +183,25 @@ function renderAltInstrumentTree(container) {
 
                     var openSub = function() {
                         subBranchDiv.style.display = "block";
-                        subRow.style.color = "#f1c40f"; 
+                        subRow.classList.add('active');
                     };
                     var closeSub = function() {
                         subBranchDiv.style.display = "none";
-                        subRow.style.color = "#FFF";
+                        subRow.classList.remove('active');
                     };
 
                     closeAllTonalites.push(closeSub);
 
                     var containsSelected = false;
                     for (var s = 0; s < listInsts.length; s++) {
-                        if (listInsts[s] === selectedInstrument) {
-                            containsSelected = true;
-                            break;
-                        }
+                        if (listInsts[s] === selectedInstrument) { containsSelected = true; break; }
                     }
-                    if (containsSelected) {
-                        openSub();
-                    }
+                    if (containsSelected) openSub();
 
                     subRow.onclick = function(e) {
                         e.stopPropagation(); 
                         if (subBranchDiv.style.display === "none") {
-                            for (var s = 0; s < closeAllTonalites.length; s++) {
-                                closeAllTonalites[s]();
-                            }
+                            for (var s = 0; s < closeAllTonalites.length; s++) closeAllTonalites[s]();
                             openSub();
                         } else {
                             closeSub();
@@ -269,12 +217,8 @@ function renderAltInstrumentTree(container) {
                                 var lookupName = instName;
 
                                 if (typeof META_INSTRUMENTS !== "undefined") {
-                                    if (!META_INSTRUMENTS[lookupName]) {
-                                        lookupName = getBaseInstrumentName(instName);
-                                    }
-                                    if (META_INSTRUMENTS[lookupName]) {
-                                        categoryName = META_INSTRUMENTS[lookupName][1] || "AUTRES";
-                                    }
+                                    if (!META_INSTRUMENTS[lookupName]) lookupName = getBaseInstrumentName(instName);
+                                    if (META_INSTRUMENTS[lookupName]) categoryName = META_INSTRUMENTS[lookupName][1] || "AUTRES";
                                 }
 
                                 if (typeof last_inst_path !== "undefined" && last_inst_path.set) {
@@ -307,9 +251,7 @@ function renderAltInstrumentTree(container) {
                                             if (infoXhr.status === 200) {
                                                 try {
                                                     var data = JSON.parse(infoXhr.responseText);
-                                                    if (data && data.status === "success" && data.nb_pages) {
-                                                        nbPages = data.nb_pages;
-                                                    }
+                                                    if (data && data.status === "success" && data.nb_pages) nbPages = data.nb_pages;
                                                 } catch(err) {}
                                             }
                                             getScore(instName, nbPages);
@@ -317,32 +259,19 @@ function renderAltInstrumentTree(container) {
                                     };
                                     infoXhr.send();
                                 }
-
                                 closeTreeView();
-                            }, isSelected, subBranchDiv, 50);
+                            }, isSelected, subBranchDiv, 2);
                         })(listInsts[j]);
                     }
                 })(tonaliteName, subInstruments);
             }
         }
     };
-    
-    xhr.onerror = function() {
-        branchDiv.innerHTML = "";
-        var errRow = document.createElement("div");
-        errRow.style.padding = "10px 12px";
-        errRow.style.fontSize = "22px";
-        errRow.style.color = "#ff5555";
-        errRow.innerText = "Erreur réseau (ALT)";
-        branchDiv.appendChild(errRow);
-    };
-
     xhr.send();
 }
 
 function renderTrueInstrumentTree(container) {
     container.innerHTML = "";
-    
     document.body.classList.add('tree-instruments-open');
     
     var modeName = (instru_select_mode.get() == MODE_POPULAR) ? "POPULAR" : "CLASSIQUE";
@@ -355,9 +284,7 @@ function renderTrueInstrumentTree(container) {
     var fullData = {};
     fullData["CHEF"] = ["conducteur", "tutti"];
     for (var k in data) {
-        if (data.hasOwnProperty(k)) {
-            fullData[k] = data[k];
-        }
+        if (data.hasOwnProperty(k)) fullData[k] = data[k];
     }
 
     for (var catName in fullData) {
@@ -365,15 +292,8 @@ function renderTrueInstrumentTree(container) {
 
         (function(categoryName, categoryData) {
             var catRow = document.createElement("div");
-            catRow.style.backgroundColor = "#2a2a2a";
-            catRow.style.borderBottom = "2px solid #444";
-            catRow.style.color = "#f1c40f";
-            catRow.style.fontWeight = "bold";
-            catRow.style.padding = "8px 12px";
-            catRow.style.cursor = "pointer";
-            catRow.style.fontSize = "22px";
-            catRow.style.whiteSpace = "nowrap";
-            catRow.innerText = "📁 " + categoryName.replace(/_/g, " ");
+            catRow.className = "item-row category-row";
+            catRow.innerText = "🗄️ " + categoryName.replace(/_/g, " ");
             container.appendChild(catRow);
 
             var branchDiv = document.createElement("div");
@@ -387,26 +307,19 @@ function renderTrueInstrumentTree(container) {
             };
             var closeMe = function() {
                 branchDiv.style.display = "none";
-                catRow.innerText = "📁 " + categoryName.replace(/_/g, " ");
+                catRow.innerText = "🗄️ " + categoryName.replace(/_/g, " ");
             };
 
             closeAllCategories.push(closeMe);
-
-            if (activeOpenedCategory === categoryName) {
-                openMe();
-            }
+            if (activeOpenedCategory === categoryName) openMe();
 
             catRow.onclick = function() {
                 if (branchDiv.style.display === "none") {
-                    for (var c = 0; c < closeAllCategories.length; c++) {
-                        closeAllCategories[c]();
-                    }
+                    for (var c = 0; c < closeAllCategories.length; c++) closeAllCategories[c]();
                     openMe();
                 } else {
                     closeMe();
-                    if (activeOpenedCategory === categoryName) {
-                        activeOpenedCategory = null;
-                    }
+                    if (activeOpenedCategory === categoryName) activeOpenedCategory = null;
                 }
             };
 
@@ -414,22 +327,18 @@ function renderTrueInstrumentTree(container) {
                 for (var i = 0; i < categoryData.length; i++) {
                     (function(instName) {
                         var isSelected = (instName === selectedInstrument);
-                        if (isSelected) {
-                            openMe();
-                        }
+                        if (isSelected) openMe();
                         addTreeRow(instName, function() {
                             last_inst_path.set(modeName + "/" + categoryName + "/" + instName);
                             current_instrument.set(instName);
                             closeTreeView();
-                        }, isSelected, branchDiv, 25);
+                        }, isSelected, branchDiv, 1);
                     })(categoryData[i]);
                 }
             } else {
                 var sortedSubKeys = [];
                 for (var key in categoryData) {
-                    if (categoryData.hasOwnProperty(key)) {
-                        sortedSubKeys.push(key);
-                    }
+                    if (categoryData.hasOwnProperty(key)) sortedSubKeys.push(key);
                 }
                 sortedSubKeys.sort(function(a, b) {
                     var indexA = QUARTES_ORDER.indexOf(a);
@@ -444,14 +353,8 @@ function renderTrueInstrumentTree(container) {
                     
                     (function(tonaliteName, subInstruments) {
                         var subRow = document.createElement("div");
-                        subRow.style.backgroundColor = "#1f1f1f";
-                        subRow.style.color = "#FFF";
-                        subRow.style.padding = "6px 10px 6px 25px";
-                        subRow.style.borderBottom = "1px solid #333";
-                        subRow.style.cursor = "pointer";
-                        subRow.style.fontWeight = "500";
-                        subRow.style.fontSize = "22px";
-                        subRow.style.whiteSpace = "nowrap";
+                        subRow.className = "item-row tonalite-row";
+                        subRow.style.setProperty('padding-left', '25px', 'important');
                         subRow.innerText = tonaliteName;
                         branchDiv.appendChild(subRow);
 
@@ -461,53 +364,42 @@ function renderTrueInstrumentTree(container) {
 
                         var openSub = function() {
                             subBranchDiv.style.display = "block";
-                            subRow.style.color = "#f1c40f"; 
+                            subRow.classList.add('active');
                             activeOpenedTonalite = tonaliteName;
                         };
                         var closeSub = function() {
                             subBranchDiv.style.display = "none";
-                            subRow.style.color = "#FFF";
+                            subRow.classList.remove('active');
                         };
 
                         closeAllTonalites.push(closeSub);
-
-                        if (activeOpenedTonalite === tonaliteName) {
-                            openSub();
-                        }
+                        if (activeOpenedTonalite === tonaliteName) openSub();
 
                         subRow.onclick = function(e) {
                             e.stopPropagation(); 
                             if (subBranchDiv.style.display === "none") {
-                                for (var t = 0; t < closeAllTonalites.length; t++) {
-                                    closeAllTonalites[t]();
-                                }
+                                for (var t = 0; t < closeAllTonalites.length; t++) closeAllTonalites[t]();
                                 openSub();
                             } else {
                                 closeSub();
-                                if (activeOpenedTonalite === tonaliteName) {
-                                    activeOpenedTonalite = null;
-                                }
+                                if (activeOpenedTonalite === tonaliteName) activeOpenedTonalite = null;
                             }
                         };
 
                         for (var j = 0; j < subInstruments.length; j++) {
                             (function(instName) {
                                 var isSelected = (instName === selectedInstrument);
-                                if (isSelected) {
-                                    openMe();
-                                    openSub();
-                                }
+                                if (isSelected) { openMe(); openSub(); }
                                 addTreeRow(instName, function() {
                                     last_inst_path.set(modeName + "/" + categoryName + "/" + tonaliteName + "/" + instName);
                                     current_instrument.set(instName);
                                     closeTreeView();
-                                }, isSelected, subBranchDiv, 50);
+                                }, isSelected, subBranchDiv, 2);
                             })(subInstruments[j]);
                         }
                     })(subKey, categoryData[subKey]);
                 }
             }
-
         })(catName, fullData[catName]);
     }
 }
@@ -539,8 +431,8 @@ function renderTrackTree(tree, basePath, container) {
 
     var closeFunctionsByDepth = [];
 
-    function buildHtmlTree(folderData, currentContainer, padding, currentPathParts) {
-        var depth = currentPathParts.length + 1;
+    function buildHtmlTree(folderData, currentContainer, currentPathParts) {
+        var depth = currentPathParts.length; 
 
         if (!closeFunctionsByDepth[depth]) {
             closeFunctionsByDepth[depth] = [];
@@ -554,18 +446,20 @@ function renderTrackTree(tree, basePath, container) {
                 var folderFullPath = nextPathParts.join("/");
                 var labelName = name.replace(/([A-Z])/g, ' $1').replace(/^./, function(str){ return str.toUpperCase(); }).trim();
 
+                var hasSubfolders = false;
+                for (var subKey in subData._subfolders) {
+                    if (subData._subfolders.hasOwnProperty(subKey)) { hasSubfolders = true; break; }
+                }
+
+                var isBook = !hasSubfolders;
+
                 var folderRow = document.createElement("div");
-                folderRow.style.backgroundColor = (depth === 1) ? "#2a2a2a" : "#1f1f1f";
-                folderRow.style.borderBottom = "1px solid #333";
-                folderRow.style.color = (depth === 1) ? "#f1c40f" : "#FFF";
-                folderRow.style.fontWeight = (depth === 1) ? "bold" : "500";
-                folderRow.style.padding = "6px 12px";
-                folderRow.style.paddingLeft = padding + "px";
-                folderRow.style.cursor = "pointer";
-                folderRow.style.fontSize = "22px";
-                folderRow.style.whiteSpace = "nowrap";
+                folderRow.className = isBook ? "item-row book-row" : "item-row folder-row";
                 
-                var icon = (depth === 1) ? "📁 " : (depth === 2 ? "📘 " : "🗄️ ");
+                // Forçage de l'indentation avec setProperty pour contrer les !important potentiels du CSS global
+                folderRow.style.setProperty('padding-left', (12 + (depth * 20)) + 'px', 'important');
+                
+                var icon = isBook ? "📘 " : "🗄️ ";
                 folderRow.innerText = icon + labelName;
                 currentContainer.appendChild(folderRow);
 
@@ -573,14 +467,8 @@ function renderTrackTree(tree, basePath, container) {
                 branchDiv.style.display = "none";
                 currentContainer.appendChild(branchDiv);
 
-                var openFolder = function() {
-                    branchDiv.style.display = "block";
-                    if (depth === 1) folderRow.innerText = "📂 " + labelName;
-                };
-                var closeFolder = function() {
-                    branchDiv.style.display = "none";
-                    if (depth === 1) folderRow.innerText = "📁 " + labelName;
-                };
+                var openFolder = function() { branchDiv.style.display = "block"; };
+                var closeFolder = function() { branchDiv.style.display = "none"; };
 
                 closeFunctionsByDepth[depth].push(closeFolder);
 
@@ -588,16 +476,14 @@ function renderTrackTree(tree, basePath, container) {
                     e.stopPropagation();
                     if (branchDiv.style.display === "none") {
                         var siblingsClose = closeFunctionsByDepth[depth];
-                        for (var s = 0; s < siblingsClose.length; s++) {
-                            siblingsClose[s]();
-                        }
+                        for (var s = 0; s < siblingsClose.length; s++) siblingsClose[s]();
                         openFolder();
                     } else {
                         closeFolder();
                     }
                 };
 
-                buildHtmlTree(subData, branchDiv, padding + 16, nextPathParts);
+                buildHtmlTree(subData, branchDiv, nextPathParts);
 
                 if (lastLoc && lastLoc.indexOf(folderFullPath + "/") === 0) {
                     openFolder();
@@ -611,21 +497,15 @@ function renderTrackTree(tree, basePath, container) {
                 var isSelected = (track.location === lastLoc);
                 addTreeRow(track.title, function() { 
                     track_location.set(track.location);
-                    
-                    if (typeof current_page !== "undefined" && current_page.set) {
-                        current_page.set(1);
-                    }
-                    
-                    if (typeof updateServerTrack === "function") {
-                        updateServerTrack(track.location);
-                    }
+                    if (typeof current_page !== "undefined" && current_page.set) current_page.set(1);
+                    if (typeof updateServerTrack === "function") updateServerTrack(track.location);
                     closeTreeView(); 
-                }, isSelected, currentContainer, padding);
+                }, isSelected, currentContainer, depth + 1);
             })(folderData._tracks[t]);
         }
     }
 
-    buildHtmlTree(rootJson, container, 12, []);
+    buildHtmlTree(rootJson, container, []);
 
     if (typeof checkSync === "function") checkSync(); 
 }
