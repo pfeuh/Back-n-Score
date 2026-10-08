@@ -54,6 +54,8 @@ function addTreeRow(text, onClick, isSelected, container, indentLevel) {
     div.className = "item-row";
     if (isSelected) {
         div.className += " selected";
+        // Application d'une couleur jaune/or prononcée pour l'élément sélectionné
+        div.style.setProperty('color', '#f1c40f', 'important');
     }
     
     // Utilisation de setProperty avec 'important' pour contourner d'éventuels conflits CSS globaux
