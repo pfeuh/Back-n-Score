@@ -3,6 +3,7 @@
 
 INSTRUMENTS = {
 "flute": ("DO","SOL","0","BOIS"),
+"flute_basse": ("DO","SOL","-1","BOIS"),
 "flute_piccolo": ("DO","SOL","1","BOIS"),
 "flute_piccolo_reb": ("REb","SOL","1","BOIS"),
 "flute_alto": ("SOL","SOL","0","BOIS"),
@@ -62,6 +63,7 @@ INSTRUMENTS = {
 "basse_fretless": ("DO","FA","-2","CORDES_PINCEES"),
 "basse": ("DO","FA","-2","CORDES_PINCEES"),
 "basse_keyG": ("DO","SOL","-2","CORDES_PINCEES"),
+"basse_sol": ("DO","SOL","-1","BOIS"),
 "contrebasse": ("DO","FA","-2","CORDES_FROTTEES"),
 "mandocello": ("DO","FA","-2","CORDES_PINCEES"),
 "basse_sib": ("SIb","FA","-1","CUIVRES"),
