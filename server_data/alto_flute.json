@@ -1,0 +1,186 @@
+[
+    {
+        "title": "Mélodie au crépuscule",
+        "location": "books/_DjangoReinhardtAnthology/melodieAuCrepuscule"
+    },
+    {
+        "title": "Gammes - Secondes",
+        "location": "exercices/trompette/gammesSecondes"
+    },
+    {
+        "title": "If you never come to me",
+        "location": "people/atelierJazzBarr/ifYouNeverComeToMe"
+    },
+    {
+        "title": "I got it bad",
+        "location": "people/atelierJazzBarr/iGotItBad"
+    },
+    {
+        "title": "Thème d'Amalia (le)",
+        "location": "people/pierreFaller/easyListening/themeDAmaliaLe"
+    },
+    {
+        "title": "Aperitivos",
+        "location": "people/pierreFaller/fado/aperitivos"
+    },
+    {
+        "title": "El sexto cubano",
+        "location": "people/pierreFaller/latin/elSextoCubano"
+    },
+    {
+        "title": "Conquistadors versus aliens",
+        "location": "people/pierreFaller/similiClassique/conquistadorsVersusAliens"
+    },
+    {
+        "title": "Croche manquante (la) (FA)",
+        "location": "people/pierreFaller/similiClassique/crocheManquanteLaFa"
+    },
+    {
+        "title": "La Fuguette",
+        "location": "people/pierreFaller/similiClassique/laFuguette"
+    },
+    {
+        "title": "Alain l'aimait bien",
+        "location": "people/pierreFaller/swing/medium/alainLAimaitBien"
+    },
+    {
+        "title": "Isa la brune",
+        "location": "people/pierreFaller/swing/medium/isaLaBrune"
+    },
+    {
+        "title": "Blues du Mourillon (le)",
+        "location": "people/pierreFaller/swing/speed/bluesDuMourillonLe"
+    },
+    {
+        "title": "Bulletin météo",
+        "location": "people/pierreFaller/swing/speed/bulletinMeteo"
+    },
+    {
+        "title": "Détournement de valse",
+        "location": "people/pierreFaller/tango/detournementDeValse"
+    },
+    {
+        "title": "4ème homme (le)",
+        "location": "people/pierreFaller/valse/4emeHommeLe"
+    },
+    {
+        "title": "Hey, Jo!",
+        "location": "people/pierreFaller/valse/heyJo"
+    },
+    {
+        "title": "Rue du bain aux plantes",
+        "location": "people/pierreFaller/valse/rueDuBainAuxPlantes"
+    },
+    {
+        "title": "Sur un banc du parc",
+        "location": "people/pierreFaller/valse/surUnBancDuParc"
+    },
+    {
+        "title": "Badinerie",
+        "location": "styles/classic/badinerie"
+    },
+    {
+        "title": "Queen of the night",
+        "location": "styles/classic/queenOfTheNightAria"
+    },
+    {
+        "title": "Five spot after dark in Dm",
+        "location": "styles/jazz/12bars/fiveSpotAfterDarkInDm"
+    },
+    {
+        "title": "Lady be good",
+        "location": "styles/jazz/gypsyJazz/ladyBeGood"
+    },
+    {
+        "title": "Sweet Georgia Brown SOL",
+        "location": "styles/jazz/gypsyJazz/sweetGeorgiaBrownSol"
+    },
+    {
+        "title": "Bye Bye Blues",
+        "location": "styles/jazz/swing/byeByeBlues"
+    },
+    {
+        "title": "I'm just a lucky so and so",
+        "location": "styles/jazz/swing/iMJustALuckySoAndSo"
+    },
+    {
+        "title": "In a mellow tone",
+        "location": "styles/jazz/swing/inAMellowTone"
+    },
+    {
+        "title": "In walked Bud",
+        "location": "styles/jazz/swing/inWalkedBud"
+    },
+    {
+        "title": "Limehouse blues en LAb",
+        "location": "styles/jazz/swing/limehouseBluesEnLab"
+    },
+    {
+        "title": "Nostalgia in Time Square",
+        "location": "styles/jazz/swing/nostalgiaInTimeSquare"
+    },
+    {
+        "title": "Stella by star light",
+        "location": "styles/jazz/swing/stellaByStarLight"
+    },
+    {
+        "title": "Sweet Georgia Brown en FA",
+        "location": "styles/jazz/swing/sweetGeorgiaBrownFa"
+    },
+    {
+        "title": "Take Five",
+        "location": "styles/jazz/swing/takeFive"
+    },
+    {
+        "title": "Take Five en Cm",
+        "location": "styles/jazz/swing/takeFiveEnCm"
+    },
+    {
+        "title": "Undecided",
+        "location": "styles/jazz/swing/undecided"
+    },
+    {
+        "title": "Moon river",
+        "location": "styles/jazz/valse/moonRiver"
+    },
+    {
+        "title": "Some day my prince will come",
+        "location": "styles/jazz/valse/someDayMyPrinceWillCome"
+    },
+    {
+        "title": "Blue bossa",
+        "location": "styles/latin/bossaNova/blueBossa"
+    },
+    {
+        "title": "One note Samba",
+        "location": "styles/latin/bossaNova/oneNoteSamba"
+    },
+    {
+        "title": "Isn't she lovely",
+        "location": "styles/rock/isnTSheLovely"
+    },
+    {
+        "title": "Caminito",
+        "location": "styles/tango/caminito"
+    },
+    {
+        "title": "Libertango",
+        "location": "styles/tango/libertango"
+    },
+    {
+        "title": "Poema",
+        "location": "styles/tango/poema"
+    },
+    {
+        "title": "Por una cabesa",
+        "location": "styles/tango/porUnaCabesa"
+    },
+    {
+        "title": "Indifférence",
+        "location": "styles/valse/indifference"
+    },
+    {
+        "title": "Tetris' Theme",
+        "location": "styles/videoGame/tetrisSTheme"
+    }
+]

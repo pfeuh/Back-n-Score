@@ -28,9 +28,13 @@ function handleAudioKeyboardShortcuts(event) {
         return;
     }
 
-    // Gestion de la touche Espace pour éviter le scroll de la page
+    // Gestion de la touche Espace pour éviter le scroll et le clic parasite sur un bouton/page actif
     if (event.key === ' ') {
         event.preventDefault();
+        event.stopPropagation();
+        if (document.activeElement && document.activeElement !== document.body) {
+            document.activeElement.blur();
+        }
     }
 
     // Si on utilise Ctrl + chiffre pour définir les repères (Set)
