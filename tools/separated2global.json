@@ -1,0 +1,16 @@
+{
+    "input_dir": "/mnt/Data1/Documents/backNScoreData/database/books/easyJazzConception",
+    "output_dir": "/mnt/Data1/Documents/temp/easyJazzConception",
+    "target_name": "easyJazzConception",
+    "selected_instrument": "DO",
+    "mp3_states": {
+        "backtrack": true,
+        "demo": true,
+        "melody": true,
+        "noBass": false,
+        "noDrum": false,
+        "noPiano": false,
+        "noSecond": false,
+        "noWind": false
+    }
+}

@@ -1,0 +1,25 @@
+ARCHITECTURE DE SYNCHRONISATION ET DE GESTION DES ROLES
+
+1. PRINCIPES FONDAMENTAUX
+- Dissociation Humain / Instrument : L'identite humaine (pseudo/prenom) est fixe pour la session, tandis que l'instrument joue peut changer dynamiquement a tout moment selon les besoins des morceaux.
+- Securite par defaut : A la connexion, tous les clients sont en mode lecture seule (is_master = false). Les boutons de navigation et de changement de morceau sont desactives pour eviter les interferences.
+- Le Chef / Administrateur : Un seul appareil detient les droits de pilotage (is_master = true). Le chef peut piloter pour tout le monde et peut deleguer ces droits a un autre musicien depuis son interface.
+
+2. FONCTIONNEMENT ETAPE PAR ETAPE
+
+Etape 1 : Premiere connexion de la tablette
+- Au premier lancement, la page demande a l'utilisateur de saisir son prenom ou pseudo.
+- Ce pseudo est stocke durablement dans le navigateur (localStorage).
+- La tablette recupere sa configuration et s'affiche en mode lecture seule (pas de commandes de navigation).
+
+Etape 2 : Le Bouclage de Synchronisation (Polling - Toutes les 2 secondes)
+- Chaque tablette envoie regulierement au serveur Flask un signal contenant : son identifiant unique (localStorage), son pseudo, son instrument actuel et son etat de droits actuel.
+
+Etape 3 : Le Tableau de Bord du Chef (Administration)
+- Le chef dispose d'une vue listant en temps reel tous les musiciens connectes grace aux donnees du polling.
+- Il y voit clairement les pseudos de chacun et leurs instruments actuels.
+- Depuis cette interface, il peut attribuer ou retirer les droits de pilotage a n'importe quel participant en direct.
+
+Etape 4 : Reaction des Tablettes
+- A chaque cycle de polling, la tablette verifie si ses droits (is_master) ont change.
+- Si le chef lui a donne les droits, les boutons de navigation s'activent. Si les droits sont retires, l'interface se verrouille a nouveau.

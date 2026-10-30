@@ -158,6 +158,7 @@ INSTRUMENTS = {
 "ukulele_baryton": ("DO","SOL","0","CORDES_PINCEES"),
 "balalaika": ("DO","SOL","1","CORDES_PINCEES"),
 "guitare_portugaise": ("DO", "SOL", "0", "CORDES_PINCEES"),
+"guitare_portugaise_tab": ("DO", "SOL", "0", "CORDES_PINCEES"),
 "chant": ("DO", "SOL", "0", "VOIX"), # Générique, pour homme ou femme
 "choeurs": ("DO", "SOL", "0", "VOIX"), # Générique, pour homme ou femme
 "paroles": ("NP", "NP", "0", "TEXTE"), # Pas de tonalité ni de clef
